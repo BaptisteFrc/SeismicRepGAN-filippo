@@ -1,0 +1,122 @@
+2024-01-01 22:02:08.824858: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:9261] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+2024-01-01 22:02:08.825060: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:607] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2024-01-01 22:02:08.825831: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1515] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2024-01-01 22:02:08.831130: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-01-01 22:02:09.469719: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/raid/home/yiso/.local/lib/python3.10/site-packages/tensorflow_addons/utils/tfa_eol_msg.py:23: UserWarning: 
+
+TensorFlow Addons (TFA) has ended development and introduction of new features.
+TFA has entered a minimal maintenance and release mode until a planned end of life in May 2024.
+Please modify downstream libraries to take dependencies from other repositories in our TensorFlow community (e.g. Keras, Keras-CV, and Keras-NLP). 
+
+For more information see: https://github.com/tensorflow/addons/issues/2807 
+
+  warnings.warn(
+wandb: Currently logged in as: yi-zhong. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.16.1
+wandb: Run data is saved locally in /raid/home/yiso/working_directory/SeismicRepGAN-filippo/wandb/run-20240101_220212-heip9zfl
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run resilient-frog-15
+wandb: ⭐️ View project at https://wandb.ai/yi-zhong/RepGAN
+wandb: 🚀 View run at https://wandb.ai/yi-zhong/RepGAN/runs/heip9zfl
+2024-01-01 22:02:14.251819: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1929] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 18100 MB memory:  -> device: 0, name: NVIDIA A100-SXM4-80GB MIG 2g.20gb, pci bus id: 0000:47:00.0, compute capability: 8.0
+/raid/home/yiso/.local/lib/python3.10/site-packages/keras/src/backend.py:5575: UserWarning: "`categorical_crossentropy` received `from_logits=True`, but the `output` argument was produced by a Softmax activation and thus does not represent logits. Was this intended?
+  output, from_logits = _get_logits(
+2024-01-01 22:03:42.166991: I external/local_xla/xla/service/service.cc:168] XLA service 0x7fed010c9520 initialized for platform Host (this does not guarantee that XLA will be used). Devices:
+2024-01-01 22:03:42.167084: I external/local_xla/xla/service/service.cc:176]   StreamExecutor device (0): Host, Default Version
+2024-01-01 22:03:42.173442: I tensorflow/compiler/mlir/tensorflow/utils/dump_mlir_util.cc:269] disabling MLIR crash reproducer, set env var `MLIR_CRASH_REPRODUCER_DIRECTORY` to enable.
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1704143022.233405 3372654 device_compiler.h:186] Compiled cluster using XLA!  This line is logged at most once for the lifetime of the process.
+2024-01-01 22:03:42.234759: E external/local_xla/xla/stream_executor/stream_executor_internal.h:177] SetPriority unimplemented for this stream.
+2024-01-01 22:03:42.234907: E external/local_xla/xla/stream_executor/stream_executor_internal.h:177] SetPriority unimplemented for this stream.
+2024-01-01 22:03:59.101269: E external/local_xla/xla/stream_executor/stream_executor_internal.h:177] SetPriority unimplemented for this stream.
+2024-01-01 22:04:51.532338: E external/local_xla/xla/stream_executor/stream_executor_internal.h:177] SetPriority unimplemented for this stream.
+WARNING:tensorflow:From /raid/home/yiso/.local/lib/python3.10/site-packages/tensorflow/python/trackable/autotrackable.py:95: LinearOperator.graph_parents (from tensorflow.python.ops.linalg.linear_operator) is deprecated and will be removed in a future version.
+Instructions for updating:
+Do not call `graph_parents`.
+WARNING:tensorflow:From /raid/home/yiso/.local/lib/python3.10/site-packages/tensorflow/python/trackable/autotrackable.py:95: LinearOperator.graph_parents (from tensorflow.python.ops.linalg.linear_operator) is deprecated and will be removed in a future version.
+Instructions for updating:
+Do not call `graph_parents`.
+wandb: Adding directory to artifact (./checkpoint/1)... Done. 0.6s
+wandb: Adding directory to artifact (./checkpoint/1)... Done. 0.6s
+wandb: Adding directory to artifact (./checkpoint/1)... Done. 0.6s
+wandb: Adding directory to artifact (./checkpoint/1)... Done. 0.6s
+/raid/home/yiso/working_directory/SeismicRepGAN-filippo/RepGAN_utils.py:362: UserWarning: You are saving your model as an HDF5 file via `model.save()`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')`.
+  tf.keras.models.save_model(model=m,filepath=filepath,overwrite=True,save_format="h5")
+WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
+WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
+WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
+WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
+WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
+WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
+WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
+WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
+WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
+WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
+WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
+WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
+wandb: 
+wandb: Run history:
+wandb:     batch/AdvDlossC █████▇▇▇▆▆▆▆▅▅▅▄▄▄▄▃▂▂▂▂▁▂▁▁▂▂▁▁▂▂▁▁▂▂▁▂
+wandb:     batch/AdvDlossN ▅▅█▄▅▅▃▄▅▅▇▆▅▃▂▄▅▃▅▅▅█▆▄▄▁▄▄▇▃▄▄▅▄▄▄▅▄▄▃
+wandb:     batch/AdvDlossS ▄▄▁▅▅▄▅█▅▅▄▄▄▆▆▄▅▃▁▅▅▄▄▄▄▃▅▅▆▃▅▅▄▅▅▅▃▅▄▅
+wandb:     batch/AdvDlossX ▇▇▆▄▃▂▂▃▄▅▆▆▇▆▆▆▆▆▅▆▅▅▆▇█▇▆▅▅▇▆▇▇▆▄▆▅▃▇▁
+wandb:     batch/AdvGlossC ██▇▆▆▆▆▅▅▅▅▅▄▅▄▃▃▃▃▂▂▃▂▂▂▂▂▂▂▂▂▂▂▂▁▁▂▂▁▂
+wandb:     batch/AdvGlossN ▆▅▃▃▄▄█▃▃▄▃▄▃▄▄▃▃▆▄▃▃▄▄▃▃▂▃▃▄▅▃▃▁▆▄▄▅▃▄▆
+wandb:     batch/AdvGlossS ▄▅█▆▆▅█▃▃▃▃▂▄▂▂▂▂▃▃▃▄▅▃▇▇▅▆▆▅▃▄▄▆▂▃▃▂▂▂▁
+wandb:     batch/AdvGlossX ▁▁▁▂▂▃▃▃▂▂▁▁▁▁▁▂▂▂▃▃▂▄▄▄▃▄▅▅▅▆▅▆▆▆▆▆▇▇▇█
+wandb:     batch/FakeCloss █▇▇▇▇▇▆▆▆▆▆▅▅▅▅▅▅▄▄▄▄▄▄▄▃▃▃▃▃▃▂▂▂▂▂▂▁▁▁▁
+wandb:      batch/RecCloss ▇▆█▅▅▅▄▄▄▄▄▅▄▄▄▃▃▃▃▃▃▃▃▃▃▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁
+wandb:      batch/RecSloss ▃▃▃▃▃▂█▃▂▂▃▁▂▂▃▁▁▂▂▁▁▃▂▁▂▁▁▂▁▂▂▂▂▂▁▁▂▁▁▃
+wandb:      batch/RecXloss ███▇▅▃▃▃▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:    batch/batch_step ▁▁▁▁▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb: batch/learning_rate ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:     epoch/AdvDlossC █████▇▇▇▆▆▆▅▅▅▄▄▃▄▃▃▂▂▂▃▁▂▁▁▁▁▁▁▁▁▁▁▂▂▁▂
+wandb:     epoch/AdvDlossN ▇▅█▄▅▄▃▄▃▄▇▆▂▃▂▅▃▃▅▅▆█▆▅▆▁▂▂▇▃▃▃▅▄▄▃▅▄▃▃
+wandb:     epoch/AdvDlossS ▂▁▁▄▅▄▄▇▄▄▃▄▄▅▅▄▄▃▁▆▂▄▃█▄▂▆▅▅▂▄▂▃▄▆▅▃▄▅▄
+wandb:     epoch/AdvDlossX ██▆▄▂▁▂▃▅▇▇▇▇▇▇▇▆▇▆▆▅▆▇▆█▇▆▆▆█▇█▇▆▄▆▆▄█▁
+wandb:     epoch/AdvGlossC ██▇▆▆▅▅▅▅▅▅▄▄▄▄▄▃▃▃▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▂▁▁▁
+wandb:     epoch/AdvGlossN ▇▆▃▃▃▄█▃▇▅▃▄▅▄▄▇▄▆▄▂▃▄▄▄▆▂▁▄▄▅▆▄▁▆▆▄▅▃▂▆
+wandb:     epoch/AdvGlossS ▄▂█▆▆▅█▃▂▂▄▃▄▂▂▅▄▃▃▄▃▅▃▄▄▆▄▇▅▄▃▁▇▂▂▄▃▂▄▁
+wandb:     epoch/AdvGlossX ▁▁▁▂▃▃▃▃▂▁▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▄▅▅▆▅▅▆▆▆▆▇▇██
+wandb:     epoch/FakeCloss ██▇▇▇▇▆▆▆▆▆▆▅▅▅▅▅▅▄▄▄▄▄▄▃▃▃▃▃▃▂▂▂▂▂▂▁▁▂▁
+wandb:      epoch/RecCloss ▅▅█▅▅▅▄▄▄▄▄▅▄▄▄▄▃▃▃▃▃▃▃▃▃▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁
+wandb:      epoch/RecSloss ▄▃▃▃▂▃█▃▄▃▃▁▂▂▃▂▃▂▂▂▄▃▂▃▅▁▃▂▁▂▁▂▂▂▃▃▂▁▄▃
+wandb:      epoch/RecXloss ██▇▇▄▄▃▃▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁
+wandb:         epoch/epoch ▁▁▁▁▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇███
+wandb: epoch/learning_rate ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:     batch/AdvDlossC -0.16249
+wandb:     batch/AdvDlossN -0.08179
+wandb:     batch/AdvDlossS 0.01585
+wandb:     batch/AdvDlossX -128.60846
+wandb:     batch/AdvGlossC -0.06874
+wandb:     batch/AdvGlossN 0.00979
+wandb:     batch/AdvGlossS -0.03498
+wandb:     batch/AdvGlossX 551.03992
+wandb:     batch/FakeCloss 0.58266
+wandb:      batch/RecCloss 0.58128
+wandb:      batch/RecSloss 3.43702
+wandb:      batch/RecXloss 0.03814
+wandb:    batch/batch_step 399
+wandb: batch/learning_rate 0.001
+wandb:     epoch/AdvDlossC -0.16249
+wandb:     epoch/AdvDlossN -0.08179
+wandb:     epoch/AdvDlossS 0.01585
+wandb:     epoch/AdvDlossX -128.60846
+wandb:     epoch/AdvGlossC -0.06874
+wandb:     epoch/AdvGlossN 0.00979
+wandb:     epoch/AdvGlossS -0.03498
+wandb:     epoch/AdvGlossX 551.03992
+wandb:     epoch/FakeCloss 0.58266
+wandb:      epoch/RecCloss 0.58128
+wandb:      epoch/RecSloss 3.43702
+wandb:      epoch/RecXloss 0.03814
+wandb:         epoch/epoch 49
+wandb: epoch/learning_rate 0.001
+wandb: 
+wandb: 🚀 View run resilient-frog-15 at: https://wandb.ai/yi-zhong/RepGAN/runs/heip9zfl
+wandb: Synced 5 W&B file(s), 0 media file(s), 20 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20240101_220212-heip9zfl/logs
