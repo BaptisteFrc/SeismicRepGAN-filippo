@@ -20,19 +20,21 @@ import tensorflow.keras.constraints as kc
 
 tfd = tfp.distributions
 
-loss_names = [
-    "AdvDLossX",
-    "AdvDlossC",
-    "AdvDlossS",
-    "AdvDlossN",
-    "AdvGlossX",
-    "AdvGlossC",
-    "AdvGlossS",
-    "AdvGlossN",
-    "RecXloss",
-    "RecCloss",
-    "RecSloss",
-    "FakeCloss"]
+# loss_names = [
+#     "AdvDLossX",
+#     "AdvDlossC",
+#     "AdvDlossS",
+#     "AdvDlossN",
+#     "AdvGlossX",
+#     "AdvGlossC",
+#     "AdvGlossS",
+#     "AdvGlossN",
+#     "RecXloss",
+#     "RecCloss",
+#     "RecSloss",
+#     "FakeCloss"]
+
+loss_names = ["RecXloss"]
 
 
 class ClipConstraint(kc.Constraint):
@@ -245,6 +247,45 @@ class RepGAN(tf.keras.Model):
         self.loss_val["RecXloss"] = RecXloss
 
         return Dc_fake, Ds_fake, Dn_fake, Dc_real, Ds_real, Dn_real
+    
+    def train_AE(self, X, c_prior):
+
+        # Sample factorial prior S
+        s_prior = self.ps.sample(self.batchSize)
+
+        # Sample factorial prior N
+        n_prior = self.pn.sample(self.batchSize)
+
+
+            # Tape gradients
+        with tf.GradientTape(persistent=True) as tape:
+
+            # Encode real signals X
+            [_, s, c, n] = self.Fx(X, training=True)
+
+            # Reconstruct real signals
+            X_rec = self.Gz((s, c, n), training=True)
+
+            # Compute loss
+            RexXloss = self.RecXloss(X, X_rec)
+
+        # Compute the gradient
+        gradFx_w, gradGz_w = tape.gradient(RexXloss,
+                                            (self.Fx.trainable_variables,
+                                            self.Gz.trainable_variables),
+                                            unconnected_gradients=tf.UnconnectedGradients.ZERO)
+        
+
+        # Update discriminators' weights
+        self.FxOpt.apply_gradients(
+            zip(gradFx_w, self.Fx.trainable_variables))
+        self.GzOpt.apply_gradients(
+            zip(gradGz_w, self.Gz.trainable_variables))
+        
+
+        self.loss_val["RecXloss"] = RexXloss
+
+        return X_rec, c, s, n
 
     # #@tf.function
     def train_ZXZ(self, X, c_prior):
@@ -346,32 +387,22 @@ class RepGAN(tf.keras.Model):
 
         self.batchSize = tf.shape(X)[0]
 
-        for _ in range(self.nRepXRep):
-            ZXZout = self.train_ZXZ(X, damage_class)
-        for _ in range(self.nXRepX):
-            XZXout = self.train_XZX(X, damage_class)
+        out = self.train_AE(X, damage_class)
 
-        (Dx_fake, Dx_real) = ZXZout
+        # for _ in range(self.nRepXRep):
+        #     ZXZout = self.train_ZXZ(X, damage_class)
+        # for _ in range(self.nXRepX):
+        #     XZXout = self.train_XZX(X, damage_class)
 
-        (Dc_fake, Ds_fake, Dn_fake, Dc_real, Ds_real, Dn_real) = XZXout
+        # (Dx_fake, Dx_real) = ZXZout
+
+        # (Dc_fake, Ds_fake, Dn_fake, Dc_real, Ds_real, Dn_real) = XZXout
 
         # Compute our own metrics
         for k, v in self.loss_trackers.items():
             v.update_state(self.loss_val[k.strip("_tracker")])
 
-        return {"AdvDlossX": self.loss_val["AdvDlossX"],
-                "AdvDlossC": self.loss_val["AdvDlossC"],
-                "AdvDlossS": self.loss_val["AdvDlossS"],
-                "AdvDlossN": self.loss_val["AdvDlossN"],
-                "AdvGlossX": self.loss_val["AdvGlossX"],
-                "AdvGlossC": self.loss_val["AdvGlossC"],
-                "AdvGlossS": self.loss_val["AdvGlossS"],
-                "AdvGlossN": self.loss_val["AdvGlossN"],
-                "RecXloss": self.loss_val["RecXloss"],
-                "RecCloss": self.loss_val["RecCloss"],
-                "RecSloss": self.loss_val["RecSloss"],
-                "FakeCloss": self.loss_val["FakeCloss"]
-                }
+        return {"RecXloss": self.loss_val["RecXloss"]}
         #return {k: v.result() for v in self.loss_trackers.values()}
 
     @tf.function

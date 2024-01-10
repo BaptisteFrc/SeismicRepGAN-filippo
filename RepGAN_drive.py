@@ -41,10 +41,10 @@ wandb.init(
     project="RepGAN",
 
     # track hyperparameters and run metadata with wandb.config
-    config={
-        "epoch": 20,
-        "batch_size": 128
-    }
+    # config={
+    #     "epoch": 20,
+    #     "batch_size": 128
+    # }
 )
 
 def Train(options):
@@ -53,13 +53,13 @@ def Train(options):
         
         losses = RepGAN_losses.getLosses(**options)
         optimizers = RepGAN_losses.getOptimizers(**options)
-        callbacks = RepGAN_losses.getCallbacks_wdb(**options)
+        callbacks = RepGAN_losses.getCallbacks(**options)
 
         # Instantiate the RepGAN model.
         GiorgiaGAN = RepGAN(options)
 
         # Compile the RepGAN model.
-        GiorgiaGAN.compile(optimizers, losses, metrics=[tf.keras.metrics.Accuracy()])
+        GiorgiaGAN.compile(optimizers, losses, metrics=[tf.keras.metrics.MeanSquaredError()])
 
         
         # Build shapes
@@ -86,7 +86,7 @@ def Train(options):
         # Train RepGAN
         history = GiorgiaGAN.fit(x=train_dataset,batch_size=options['batchSize'],
                                  epochs=options["epochs"],
-                                 callbacks=[WandbMetricsLogger(log_freq='batch'),WandbModelCheckpoint(filepath='checkpoint/1/',save_freq=100)],
+                                 callbacks=[WandbMetricsLogger(log_freq='epoch'),WandbModelCheckpoint(filepath='checkpoint/2/',save_freq=100)],
                                  validation_data=val_dataset,shuffle=True,validation_freq=100)
 
         
