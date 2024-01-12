@@ -127,7 +127,7 @@ def ParseOptions():
                         help='CNN stride of N-branch branch')
     parser.add_argument("--batchSize",
                         type=int,
-                        default=128,
+                        default=256,
                         help='input batch size')    
     parser.add_argument("--DxTrainType", 
                         type=str, 

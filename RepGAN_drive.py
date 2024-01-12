@@ -75,8 +75,8 @@ def Train(options):
             train_dataset, val_dataset = mdof.CreateData(**options)
         else:
             # Load the dataset
-            #train_dataset, val_dataset = mdof.LoadData(**options)
-            train_dataset, val_dataset = mdof.Load_Un_Damaged(0, **options)
+            train_dataset, val_dataset = mdof.LoadData(**options)
+            #train_dataset, val_dataset = mdof.Load_Un_Damaged(0, **options)
         
         log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
@@ -86,7 +86,7 @@ def Train(options):
         # Train RepGAN
         history = GiorgiaGAN.fit(x=train_dataset,batch_size=options['batchSize'],
                                  epochs=options["epochs"],
-                                 callbacks=[WandbMetricsLogger(log_freq='epoch'),WandbModelCheckpoint(filepath='checkpoint/2/',save_freq=100)],
+                                 callbacks=[WandbMetricsLogger(log_freq='batch'),WandbModelCheckpoint(filepath='checkpoint/2/',save_freq=100)],
                                  validation_data=val_dataset,shuffle=True,validation_freq=100)
 
         
@@ -123,8 +123,8 @@ def Evaluate(options):
             train_dataset, val_dataset = mdof.CreateData(**options)
         else:
             # Load the dataset
-            #train_dataset, val_dataset = mdof.LoadData(**options)
-            train_dataset, val_dataset = mdof.Load_Un_Damaged(0,**options)
+            train_dataset, val_dataset = mdof.LoadData(**options)
+            #train_dataset, val_dataset = mdof.Load_Un_Damaged(0,**options)
         
         # Re-evaluate the model
         import pdb

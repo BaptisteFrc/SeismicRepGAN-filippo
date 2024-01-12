@@ -20,21 +20,21 @@ import tensorflow.keras.constraints as kc
 
 tfd = tfp.distributions
 
-# loss_names = [
-#     "AdvDLossX",
-#     "AdvDlossC",
-#     "AdvDlossS",
-#     "AdvDlossN",
-#     "AdvGlossX",
-#     "AdvGlossC",
-#     "AdvGlossS",
-#     "AdvGlossN",
-#     "RecXloss",
-#     "RecCloss",
-#     "RecSloss",
-#     "FakeCloss"]
+loss_names = [
+    "AdvDLossX",
+    "AdvDlossC",
+    "AdvDlossS",
+    "AdvDlossN",
+    "AdvGlossX",
+    "AdvGlossC",
+    "AdvGlossS",
+    "AdvGlossN",
+    "RecXloss",
+    "RecCloss",
+    "RecSloss",
+    "FakeCloss"]
 
-loss_names = ["RecXloss"]
+#loss_names = ["RecXloss"]
 
 
 class ClipConstraint(kc.Constraint):
@@ -353,14 +353,14 @@ class RepGAN(tf.keras.Model):
                 [hs, s_rec, c_rec, _] = self.Fx(X_fake, training=True)
                 # Q_cont_distribution = tfp.distributions.MultivariateNormalDiag(loc=μs_rec, scale_diag=logΣs_rec)
                 # RecSloss = -tf.reduce_mean(Q_cont_distribution.log_prob(s_rec))
-                RecSloss = self.RecSloss(s_prior, hs)
-                RecCloss = self.RecCloss(c_prior, c_rec)
+                #RecSloss = self.RecSloss(s_prior, hs)
+                #RecCloss = self.RecCloss(c_prior, c_rec)
 
                 # Compute InfoGAN Q loos
-                Qloss = RecSloss + RecCloss
+                #Qloss = RecSloss + RecCloss
 
                 # Total ZXZ generator loss
-                GeneratorLossZXZ = AdvGlossX + Qloss
+                GeneratorLossZXZ = AdvGlossX #+ Qloss
 
             # Get the gradients w.r.t the generator loss
             gradFx_w, gradGz_w = tape.gradient(GeneratorLossZXZ, (self.Fx.trainable_variables,
@@ -374,8 +374,8 @@ class RepGAN(tf.keras.Model):
                 zip(gradFx_w, self.Fx.trainable_variables))
 
             self.loss_val["AdvGlossX"] = AdvGlossX
-            self.loss_val["RecSloss"] = RecSloss
-            self.loss_val["RecCloss"] = RecCloss
+            #self.loss_val["RecSloss"] = RecSloss
+            #self.loss_val["RecCloss"] = RecCloss
 
         return Dx_fake, Dx_real
 
@@ -389,12 +389,12 @@ class RepGAN(tf.keras.Model):
 
         out = self.train_AE(X, damage_class)
 
-        # for _ in range(self.nRepXRep):
-        #     ZXZout = self.train_ZXZ(X, damage_class)
+        for _ in range(self.nRepXRep):
+            ZXZout = self.train_ZXZ(X, damage_class)
         # for _ in range(self.nXRepX):
         #     XZXout = self.train_XZX(X, damage_class)
 
-        # (Dx_fake, Dx_real) = ZXZout
+        (Dx_fake, Dx_real) = ZXZout
 
         # (Dc_fake, Ds_fake, Dn_fake, Dc_real, Ds_real, Dn_real) = XZXout
 
@@ -402,7 +402,12 @@ class RepGAN(tf.keras.Model):
         for k, v in self.loss_trackers.items():
             v.update_state(self.loss_val[k.strip("_tracker")])
 
-        return {"RecXloss": self.loss_val["RecXloss"]}
+        return {"RecXloss": self.loss_val["RecXloss"], 
+                "AdvGlossX": self.loss_val["AdvGlossX"],
+                "AdvDlossX": self.loss_val["AdvDlossX"],}
+                #"RecSloss": self.loss_val["RecSloss"],
+                #"RecCloss": self.loss_val["RecCloss"],
+                
         #return {k: v.result() for v in self.loss_trackers.values()}
 
     @tf.function

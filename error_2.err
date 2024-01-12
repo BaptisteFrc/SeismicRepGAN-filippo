@@ -1,10 +1,12 @@
-2024-01-08 22:33:19.758024: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:9261] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
-2024-01-08 22:33:19.758211: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:607] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
-2024-01-08 22:33:19.758946: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1515] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
-2024-01-08 22:33:19.764207: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+2024-01-12 10:37:48.990135: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:9261] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+2024-01-12 10:37:48.990328: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:607] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2024-01-12 10:37:48.991145: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1515] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2024-01-12 10:37:48.996668: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
 To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2024-01-08 22:33:20.417169: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
-/raid/home/yiso/.local/lib/python3.10/site-packages/tensorflow_addons/utils/tfa_eol_msg.py:23: UserWarning: 
+2024-01-12 10:37:49.655131: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+/usr/lib/python3/dist-packages/requests/__init__.py:89: RequestsDependencyWarning: urllib3 (2.1.0) or chardet (3.0.4) doesn't match a supported version!
+  warnings.warn("urllib3 ({}) or chardet ({}) doesn't match a supported "
+/raid/home/projetpoleiagan/francois_bap/.local/lib/python3.10/site-packages/tensorflow_addons/utils/tfa_eol_msg.py:23: UserWarning: 
 
 TensorFlow Addons (TFA) has ended development and introduction of new features.
 TFA has entered a minimal maintenance and release mode until a planned end of life in May 2024.
@@ -13,59 +15,21 @@ Please modify downstream libraries to take dependencies from other repositories 
 For more information see: https://github.com/tensorflow/addons/issues/2807 
 
   warnings.warn(
-wandb: Currently logged in as: yi-zhong (poleia). Use `wandb login --relogin` to force relogin
-wandb: Tracking run with wandb version 0.16.1
-wandb: Run data is saved locally in /raid/home/yiso/working_directory/SeismicRepGAN-filippo/wandb/run-20240108_223323-0fjkaqvw
+/usr/lib/python3/dist-packages/requests/__init__.py:89: RequestsDependencyWarning: urllib3 (2.1.0) or chardet (3.0.4) doesn't match a supported version!
+  warnings.warn("urllib3 ({}) or chardet ({}) doesn't match a supported "
+wandb: Currently logged in as: bfrancois (poleia). Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.16.2
+wandb: Run data is saved locally in /raid/home/projetpoleiagan/francois_bap/Desktop/SeismicRepGAN-filippo/wandb/run-20240112_103752-4ngu5wbh
 wandb: Run `wandb offline` to turn off syncing.
-wandb: Syncing run swept-pond-6
+wandb: Syncing run pleasant-frog-27
 wandb: ⭐️ View project at https://wandb.ai/poleia/RepGAN
-wandb: 🚀 View run at https://wandb.ai/poleia/RepGAN/runs/0fjkaqvw
-2024-01-08 22:33:25.360545: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1929] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 18100 MB memory:  -> device: 0, name: NVIDIA A100-SXM4-80GB MIG 2g.20gb, pci bus id: 0000:47:00.0, compute capability: 8.0
-2024-01-08 22:33:33.462016: I external/local_xla/xla/service/service.cc:168] XLA service 0x7f95b3535620 initialized for platform Host (this does not guarantee that XLA will be used). Devices:
-2024-01-08 22:33:33.462103: I external/local_xla/xla/service/service.cc:176]   StreamExecutor device (0): Host, Default Version
-2024-01-08 22:33:33.468463: I tensorflow/compiler/mlir/tensorflow/utils/dump_mlir_util.cc:269] disabling MLIR crash reproducer, set env var `MLIR_CRASH_REPRODUCER_DIRECTORY` to enable.
+wandb: 🚀 View run at https://wandb.ai/poleia/RepGAN/runs/4ngu5wbh
+2024-01-12 10:37:54.571724: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1929] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 18100 MB memory:  -> device: 0, name: NVIDIA A100-SXM4-80GB MIG 2g.20gb, pci bus id: 0000:47:00.0, compute capability: 8.0
+2024-01-12 10:38:47.654918: I external/local_xla/xla/service/service.cc:168] XLA service 0x2baed4e0 initialized for platform Host (this does not guarantee that XLA will be used). Devices:
+2024-01-12 10:38:47.654994: I external/local_xla/xla/service/service.cc:176]   StreamExecutor device (0): Host, Default Version
+2024-01-12 10:38:47.661322: I tensorflow/compiler/mlir/tensorflow/utils/dump_mlir_util.cc:269] disabling MLIR crash reproducer, set env var `MLIR_CRASH_REPRODUCER_DIRECTORY` to enable.
 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
-I0000 00:00:1704749613.497792 3354240 device_compiler.h:186] Compiled cluster using XLA!  This line is logged at most once for the lifetime of the process.
-2024-01-08 22:33:33.498821: E external/local_xla/xla/stream_executor/stream_executor_internal.h:177] SetPriority unimplemented for this stream.
-2024-01-08 22:33:33.511281: E external/local_xla/xla/stream_executor/stream_executor_internal.h:177] SetPriority unimplemented for this stream.
-2024-01-08 22:33:33.511470: E external/local_xla/xla/stream_executor/stream_executor_internal.h:177] SetPriority unimplemented for this stream.
-2024-01-08 22:33:41.580388: E external/local_xla/xla/stream_executor/stream_executor_internal.h:177] SetPriority unimplemented for this stream.
-WARNING:tensorflow:From /raid/home/yiso/.local/lib/python3.10/site-packages/tensorflow/python/trackable/autotrackable.py:95: LinearOperator.graph_parents (from tensorflow.python.ops.linalg.linear_operator) is deprecated and will be removed in a future version.
-Instructions for updating:
-Do not call `graph_parents`.
-WARNING:tensorflow:From /raid/home/yiso/.local/lib/python3.10/site-packages/tensorflow/python/trackable/autotrackable.py:95: LinearOperator.graph_parents (from tensorflow.python.ops.linalg.linear_operator) is deprecated and will be removed in a future version.
-Instructions for updating:
-Do not call `graph_parents`.
-wandb: Adding directory to artifact (./checkpoint/2)... Done. 0.6s
-wandb: Adding directory to artifact (./checkpoint/2)... Done. 0.6s
-wandb: Adding directory to artifact (./checkpoint/2)... Done. 0.6s
-wandb: Adding directory to artifact (./checkpoint/2)... Done. 0.6s
-/raid/home/yiso/working_directory/SeismicRepGAN-filippo/RepGAN_utils.py:362: UserWarning: You are saving your model as an HDF5 file via `model.save()`. This file format is considered legacy. We recommend using instead the native Keras format, e.g. `model.save('my_model.keras')`.
-  tf.keras.models.save_model(model=m,filepath=filepath,overwrite=True,save_format="h5")
-WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
-WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
-WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
-WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
-WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
-WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
-WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
-WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
-WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
-WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
-WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
-WARNING:tensorflow:Compiled the loaded model, but the compiled metrics have yet to be built. `model.compile_metrics` will be empty until you train or evaluate the model.
-wandb: 
-wandb: Run history:
-wandb:      epoch/RecXloss █▇▆▅▄▃▃▃▃▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
-wandb:         epoch/epoch ▁▁▁▁▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▆▇▇▇▇▇███
-wandb: epoch/learning_rate ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
-wandb: 
-wandb: Run summary:
-wandb:      epoch/RecXloss 0.04156
-wandb:         epoch/epoch 49
-wandb: epoch/learning_rate 0.001
-wandb: 
-wandb: 🚀 View run swept-pond-6 at: https://wandb.ai/poleia/RepGAN/runs/0fjkaqvw
-wandb: ️⚡ View job at https://wandb.ai/poleia/RepGAN/jobs/QXJ0aWZhY3RDb2xsZWN0aW9uOjEyODQ0MDAyOA==/version_details/v1
-wandb: Synced 5 W&B file(s), 0 media file(s), 20 artifact file(s) and 0 other file(s)
-wandb: Find logs at: ./wandb/run-20240108_223323-0fjkaqvw/logs
+I0000 00:00:1705052327.715582 1433938 device_compiler.h:186] Compiled cluster using XLA!  This line is logged at most once for the lifetime of the process.
+2024-01-12 10:38:47.716924: E external/local_xla/xla/stream_executor/stream_executor_internal.h:177] SetPriority unimplemented for this stream.
+2024-01-12 10:38:48.028336: E external/local_xla/xla/stream_executor/stream_executor_internal.h:177] SetPriority unimplemented for this stream.
+2024-01-12 10:38:50.486622: E external/local_xla/xla/stream_executor/stream_executor_internal.h:177] SetPriority unimplemented for this stream.

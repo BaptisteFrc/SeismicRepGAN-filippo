@@ -131,7 +131,7 @@ def CreateData(**kwargs):
 def LoadData(**kwargs):
     LoadData.__globals__.update(kwargs)
 
-    fid_th = opj(store_dir,"Data.h5")
+    fid_th = opj(store_dir,"Data_full.h5")
     
     h5f = h5py.File(fid_th,'r')
     X = h5f['X'][...]
@@ -146,9 +146,9 @@ def LoadData(**kwargs):
                                                                       test_size=0.1)
     
     return (
-        tf.data.Dataset.from_tensor_slices((Xtrn,(Ctrn,Mtrn,Dtrn))).batch(batchSize),
-        tf.data.Dataset.from_tensor_slices((Xvld,(Cvld,Mvld,Dvld))).batch(batchSize)
-        )
+        tf.data.Dataset.from_tensor_slices((Xtrn,Ctrn,Mtrn,Dtrn)).batch(batchSize),
+        tf.data.Dataset.from_tensor_slices((Xvld,Cvld,Mvld,Dvld)).batch(batchSize)
+    )
 
 
 def Load_Un_Damaged(i,**kwargs):
