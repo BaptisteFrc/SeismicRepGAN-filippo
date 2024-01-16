@@ -127,7 +127,7 @@ def ParseOptions():
                         help='CNN stride of N-branch branch')
     parser.add_argument("--batchSize",
                         type=int,
-                        default=256,
+                        default=50,
                         help='input batch size')    
     parser.add_argument("--DxTrainType", 
                         type=str, 
@@ -357,9 +357,12 @@ def DumpModels(model, results_dir):
     # loaded_module = tf.keras.models.load_model(
     #     filepath, custom_objects=None, compile=True, options=None)
     for m in model.models:
-        filepath= os.path.join(results_dir, "{:>s}.h5".format(m.name))
+        fp = os.path.join(results_dir, "{:>s}.h5".format(m.name))
+        print(fp)
         #with h5py.File(filepath,'w') as fidh5:
-        tf.keras.models.save_model(model=m,filepath=filepath,overwrite=True,save_format="h5")
+        #tf.keras.models.save_model(model=m,filepath=filepath,overwrite=True,save_format="h5")
+        m.save_weights(fp, overwrite=True, save_format="h5")
+
         # fidh5 = h5py.File(filepath,'w')
         # tf.keras.models.save_model(model=m,filepath=filepath,save_format="h5")
         # fidh5.close()

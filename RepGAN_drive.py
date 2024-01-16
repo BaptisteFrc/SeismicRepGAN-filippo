@@ -22,7 +22,7 @@ import math as mt
 import tensorflow as tf
 from tensorflow import keras
 tf.keras.backend.set_floatx('float32')
-gpu = tf.config.experimental.list_physical_devices('GPU')
+gpu = tf.config.list_physical_devices('GPU')
 print("Num GPUs Available: ", len(gpu))
 tf.config.experimental.set_memory_growth(gpu[0], True)
 
@@ -57,7 +57,8 @@ def Train(options):
 
         # Instantiate the RepGAN model.
         GiorgiaGAN = RepGAN(options)
-
+        GiorgiaGAN.Fx.summary()
+        GiorgiaGAN.Gz.summary()
         # Compile the RepGAN model.
         GiorgiaGAN.compile(optimizers, losses, metrics=[tf.keras.metrics.MeanSquaredError()])
 
@@ -86,8 +87,8 @@ def Train(options):
         # Train RepGAN
         history = GiorgiaGAN.fit(x=train_dataset,batch_size=options['batchSize'],
                                  epochs=options["epochs"],
-                                 callbacks=[WandbMetricsLogger(log_freq='batch'),WandbModelCheckpoint(filepath='checkpoint/2/',save_freq=100)],
-                                 validation_data=val_dataset,shuffle=True,validation_freq=100)
+                                 callbacks=[WandbMetricsLogger(log_freq='batch')],
+                                 validation_data=val_dataset,shuffle=True)#,validation_freq=100)
 
         
 
@@ -106,6 +107,7 @@ def Evaluate(options):
 
         # Instantiate the RepGAN model.
         GiorgiaGAN = RepGAN(options)
+        GiorgiaGAN.Fx.summary()
 
         # Compile the RepGAN model.
         GiorgiaGAN.compile(optimizers, losses, metrics=[
@@ -113,10 +115,13 @@ def Evaluate(options):
         # Build output shapes
         GiorgiaGAN.compute_output_shape(input_shape=(options['batchSize'], options['Xsize'],
                                                      options['nXchannels']))
+        for m in GiorgiaGAN.models:
+            filepath= os.path.join(options["results_dir"], "{:>s}.h5".format(m.name))
+            m.load_weights(filepath)
         
-        latest = tf.train.latest_checkpoint(options["checkpoint_dir"])
+        # latest = tf.train.latest_checkpoint(options["checkpoint_dir"])
         
-        GiorgiaGAN.load_weights(latest)
+        # GiorgiaGAN.load_weights(latest)
 
         if options['CreateData']:
             # Create the dataset
@@ -127,9 +132,9 @@ def Evaluate(options):
             #train_dataset, val_dataset = mdof.Load_Un_Damaged(0,**options)
         
         # Re-evaluate the model
-        import pdb
-        pdb.set_trace()
-        loss, acc = GiorgiaGAN.evaluate(val_dataset)
+        # import pdb
+        # pdb.set_trace()
+        loss = GiorgiaGAN.evaluate(val_dataset)
     
 
 if __name__ == '__main__':

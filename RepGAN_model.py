@@ -20,21 +20,21 @@ import tensorflow.keras.constraints as kc
 
 tfd = tfp.distributions
 
-loss_names = [
-    "AdvDLossX",
-    "AdvDlossC",
-    "AdvDlossS",
-    "AdvDlossN",
-    "AdvGlossX",
-    "AdvGlossC",
-    "AdvGlossS",
-    "AdvGlossN",
-    "RecXloss",
-    "RecCloss",
-    "RecSloss",
-    "FakeCloss"]
+# loss_names = [
+#     "AdvDLossX",
+#     "AdvDlossC",
+#     "AdvDlossS",
+#     "AdvDlossN",
+#     "AdvGlossX",
+#     "AdvGlossC",
+#     "AdvGlossS",
+#     "AdvGlossN",
+#     "RecXloss",
+#     "RecCloss",
+#     "RecSloss",
+#     "FakeCloss"]
 
-#loss_names = ["RecXloss"]
+loss_names = ["RecXloss"]
 
 
 class ClipConstraint(kc.Constraint):
@@ -379,7 +379,7 @@ class RepGAN(tf.keras.Model):
 
         return Dx_fake, Dx_real
 
-    # #@tf.function
+    @tf.function
     def train_step(self, XC):
         if isinstance(XC, tuple):
             X, damage_class, magnitude, damage_index = XC
@@ -389,12 +389,12 @@ class RepGAN(tf.keras.Model):
 
         out = self.train_AE(X, damage_class)
 
-        for _ in range(self.nRepXRep):
-            ZXZout = self.train_ZXZ(X, damage_class)
+        # for _ in range(self.nRepXRep):
+        #     ZXZout = self.train_ZXZ(X, damage_class)
         # for _ in range(self.nXRepX):
         #     XZXout = self.train_XZX(X, damage_class)
 
-        (Dx_fake, Dx_real) = ZXZout
+        # (Dx_fake, Dx_real) = ZXZout
 
         # (Dc_fake, Ds_fake, Dn_fake, Dc_real, Ds_real, Dn_real) = XZXout
 
@@ -402,29 +402,41 @@ class RepGAN(tf.keras.Model):
         for k, v in self.loss_trackers.items():
             v.update_state(self.loss_val[k.strip("_tracker")])
 
-        return {"RecXloss": self.loss_val["RecXloss"], 
-                "AdvGlossX": self.loss_val["AdvGlossX"],
-                "AdvDlossX": self.loss_val["AdvDlossX"],}
-                #"RecSloss": self.loss_val["RecSloss"],
-                #"RecCloss": self.loss_val["RecCloss"],
+        # return {"RecXloss": self.loss_val["RecXloss"],}
+        #         #"AdvGlossX": self.loss_val["AdvGlossX"],
+        #         #"AdvDlossX": self.loss_val["AdvDlossX"],
+        #         #"RecSloss": self.loss_val["RecSloss"],
+        #         #"RecCloss": self.loss_val["RecCloss"],
                 
-        #return {k: v.result() for v in self.loss_trackers.values()}
+        return {k: v.result() for k,v in self.loss_trackers.items()}
 
     @tf.function
     def test_step(self, XC):
         if isinstance(XC, tuple):
-            X, c = XC
-            c, mag, di = c
+            X, c,mag, di = XC
+            #c, mag, di = c
         # Compute predictions
-        X_rec, c_fake, s_fake, n_fake = self(X, training=False)
+        #X_rec, c_fake, s_fake, n_fake = self(X, training=False)
+        [_, s, c, n] = self.Fx(X, training=False)
 
+        # Reconstruct real signals
+        X_rec = self.Gz((s, c, n), training=False)
+    
         # Updates the metrics tracking the loss
-        self.RecXloss(X, X_rec)
+        RexXloss=self.RecXloss(X, X_rec)
+
+        self.loss_val["RecXloss"] = RexXloss
+        
+        for k, v in self.loss_trackers.items():
+            v.update_state(self.loss_val[k.strip("_tracker")])
+
         # Update the metrics.
-        self.RecGlossX_tracker.update_state(X, X_rec)
+        #self.RecGlossX_tracker.update_state(X, X_rec)
+        #self.RecXloss_tracker.update_state(X, X_rec)
         # Return a dict mapping metric names to current value.
         # Note that it will include the loss (tracked in self.metrics).
-        return {"RecXloss": RecGlossX_tracker.result()}
+        return {"RecXloss_mean": self.loss_trackers["RecXloss_tracker"].result()}
+        #return {"RecXloss": RecXloss_tracker.result()}
 
     def call(self, X):
         [_, s_fake, c_fake, n_fake] = self.Fx(X)
@@ -684,6 +696,7 @@ class RepGAN(tf.keras.Model):
         s = kl.Input(shape=(self.latentSdim,), name="s")
         c = kl.Input(shape=(self.latentCdim,), name="c")
         n = kl.Input(shape=(self.latentNdim,), name="n")
+        #n = kl.Input(shape=(64,64,), name="n")
 
         layer = 0
         # variable s
@@ -778,6 +791,7 @@ class RepGAN(tf.keras.Model):
             GzC = tf.keras.Model(c, h_c)
 
         # variable n
+        #h_n = n
         h_n = tfa.layers.SpectralNormalization(
             kl.Dense(self.Nsize*self.nNchannels))(n)
         h_n = kl.BatchNormalization(momentum=0.95)(h_n)
@@ -807,7 +821,7 @@ class RepGAN(tf.keras.Model):
             GzN = keras.Model(n, h_n)
 
         else:
-            for layer in range(1, self.nNlayers):
+            for layer in range(1,self.nNlayers): #2
                 h_n = tfa.layers.SpectralNormalization(kl.Conv1DTranspose(int(self.nNchannels*self.Nstride**(-layer)),
                                                                           self.Nkernel, self.Nstride, padding="same",
                                                                           data_format="channels_last"))(h_n)

@@ -9,19 +9,19 @@ from scipy import integrate
 from scipy import signal
 from scipy.stats import norm,lognorm
 from scipy.fft import rfft, rfftfreq
-import obspy.signal
-from obspy.signal.tf_misfit import plot_tf_gofs, eg, pg
+#import obspy.signal
+#from obspy.signal.tf_misfit import plot_tf_gofs, eg, pg
 import itertools
 import matplotlib
 from matplotlib import pyplot as plt
 from sklearn.utils import shuffle
 from RepGAN_model import RepGAN
 import RepGAN_losses
-from tensorflow.keras.optimizers import Adam, RMSprop
+#from tensorflow.keras.optimizers import Adam, RMSprop
 
 from matplotlib.pyplot import *
 from matplotlib import cm
-from colorspacious import cspace_converter
+#from colorspacious import cspace_converter
 from collections import OrderedDict
 cmaps = OrderedDict()
 cmaps['Qualitative'] = ['Pastel1', 'Pastel2', 'Paired', 'Accent','Dark2', 'Set1', 'Set2', 'Set3',
@@ -30,8 +30,8 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import multilabel_confusion_matrix
 from statistics import mean
-import plotly.graph_objects as go
-import plotly.express as px
+# import plotly.graph_objects as go
+# import plotly.express as px
 
 from numpy.lib.type_check import imag
 import sklearn
@@ -39,22 +39,22 @@ from PIL import Image
 import io
 import numpy as np
 
-from bokeh.layouts import layout
-from bokeh.plotting import figure
-from bokeh.models import CustomJS, Slider, ColumnDataSource
-from bokeh.resources import CDN
-from bokeh.embed import file_html
-from bokeh.io import curdoc,output_file, show
-import bokeh
-from bokeh.models import Text, Label
-import panel as pn
-pn.extension()
+# from bokeh.layouts import layout
+# from bokeh.plotting import figure
+# from bokeh.models import CustomJS, Slider, ColumnDataSource
+# from bokeh.resources import CDN
+# from bokeh.embed import file_html
+# from bokeh.io import curdoc,output_file, show
+# import bokeh
+# from bokeh.models import Text, Label
+# import panel as pn
+#pn.extension()
 
 
-from interferometry import *
+#from interferometry import *
 import MDOFload as mdof
 from RepGAN_utils import *
-from interferometry_utils import *
+#from interferometry_utils import *
 from sklearn.manifold import TSNE
 
 from random import seed
@@ -195,12 +195,18 @@ def PlotReconstructedTHs(model,realXC,results_dir):
 
     # Print real vs reconstructed signal
     for j in range(realX.shape[2]):
-        for k in range(10):
-            i = randint(0, realX.shape[0]-1)
+        for k in range(5):
+            #i = randint(0, realX.shape[0]-1)
+            i=k*30
             hfg = plt.figure(figsize=(12,6),tight_layout=True)
             hax = hfg.add_subplot(111)
             hax.plot(t,realX[i,:,j], color='black')
             hax.plot(t,recX[i,:,j], color='orange',linestyle="--")
+            #compute mse
+            mse = np.square(np.subtract(realX[i,:,j], recX[i,:,j])).mean()
+            zero = np.zeros_like(realX[i,:,j])
+            mse0 = np.square(np.subtract(realX[i,:,j], zero)).mean()
+            hax.set_title(str(mse)+" "+str(mse0), fontsize=22,fontweight='bold')
             #hax.set_title(r'$X \hspace{0.5} reconstruction$', fontsize=22,fontweight='bold')
             hax.set_ylabel(r'$X(t) \hspace{0.5} [1]$', fontsize=26,fontweight='bold')
             hax.set_xlabel(r'$t \hspace{0.5} [s]$', fontsize=26,fontweight='bold')
@@ -1520,14 +1526,18 @@ GiorgiaGAN = RepGAN(options)
 # Compile the RepGAN model.
 GiorgiaGAN.compile(optimizers, losses)  # run_eagerly=True
 
-Xtrn, Xvld, _ = mdof.LoadData(**options)
+#Xtrn, Xvld, _ = mdof.LoadData(**options)
 
-GiorgiaGAN.Fx = keras.models.load_model(options['checkpoint_dir'] + '/Fx',compile=False)
-GiorgiaGAN.Gz = keras.models.load_model(options['checkpoint_dir'] + '/Gz',compile=False)
-GiorgiaGAN.Dx = keras.models.load_model(options['checkpoint_dir'] + '/Dx',compile=False)
-GiorgiaGAN.Ds = keras.models.load_model(options['checkpoint_dir'] + '/Ds',compile=False)
-GiorgiaGAN.Dn = keras.models.load_model(options['checkpoint_dir'] + '/Dn',compile=False)
-GiorgiaGAN.Dc = keras.models.load_model(options['checkpoint_dir'] + '/Dc',compile=False)
+# GiorgiaGAN.Fx = keras.models.load_model(options['checkpoint_dir'] + '/Fx',compile=False)
+# GiorgiaGAN.Gz = keras.models.load_model(options['checkpoint_dir'] + '/Gz',compile=False)
+# GiorgiaGAN.Dx = keras.models.load_model(options['checkpoint_dir'] + '/Dx',compile=False)
+# GiorgiaGAN.Ds = keras.models.load_model(options['checkpoint_dir'] + '/Ds',compile=False)
+# GiorgiaGAN.Dn = keras.models.load_model(options['checkpoint_dir'] + '/Dn',compile=False)
+# GiorgiaGAN.Dc = keras.models.load_model(options['checkpoint_dir'] + '/Dc',compile=False)
+
+for m in GiorgiaGAN.models:
+    filepath= os.path.join(options["results_dir"], "{:>s}.h5".format(m.name))
+    m.load_weights(filepath)
 
 
 GiorgiaGAN.build(input_shape=(options['batchSize'], options['Xsize'], options['nXchannels']))
@@ -1546,29 +1556,29 @@ if options['CreateData']:
     Xtrn,  Xvld, _ = mdof.CreateData(**options)
 else:
     # Load the dataset
-    Xtrn, Xvld, _ = mdof.LoadData(**options)
+    Xtrn, Xvld  = mdof.LoadData(**options)
 
 PlotReconstructedTHs(GiorgiaGAN,Xvld,options['results_dir']) # Plot reconstructed time-histories
 
-PlotTHSGoFs(GiorgiaGAN,Xvld,options['results_dir']) # Plot reconstructed time-histories
+# PlotTHSGoFs(GiorgiaGAN,Xvld,options['results_dir']) # Plot reconstructed time-histories
 
-PlotClassificationMetrics(GiorgiaGAN,Xvld,options['results_dir']) # Plot classification metrics
+# PlotClassificationMetrics(GiorgiaGAN,Xvld,options['results_dir']) # Plot classification metrics
 
-PlotLatentSpace(GiorgiaGAN,Xvld,options['results_dir'])
+# PlotLatentSpace(GiorgiaGAN,Xvld,options['results_dir'])
 
-PlotTSNE(GiorgiaGAN,Xvld,options['results_dir'])
+# PlotTSNE(GiorgiaGAN,Xvld,options['results_dir'])
 
-PlotDistributions(GiorgiaGAN,Xvld,options['results_dir'])
+# PlotDistributions(GiorgiaGAN,Xvld,options['results_dir'])
 
-Xtrn = {}
-Xvld = {}
-for i in range(options['latentCdim']):
-    Xtrn['Xtrn_%d' % i], Xvld['Xvld_%d' % i], _  = mdof.Load_Un_Damaged(i,**options)
+# Xtrn = {}
+# Xvld = {}
+# for i in range(options['latentCdim']):
+#     Xtrn['Xtrn_%d' % i], Xvld['Xvld_%d' % i], _  = mdof.Load_Un_Damaged(i,**options)
 
-for i in range(options['latentCdim']):
-    PlotBatchGoFs(GiorgiaGAN,Xtrn['Xtrn_%d' % i],Xvld['Xvld_%d' % i],i,options['results_dir'])
+# for i in range(options['latentCdim']):
+#     PlotBatchGoFs(GiorgiaGAN,Xtrn['Xtrn_%d' % i],Xvld['Xvld_%d' % i],i,options['results_dir'])
 
-for i in range(1,options['latentCdim']):
-    PlotSwitchedTHs(GiorgiaGAN,Xvld['Xvld_%d' % 0],Xvld['Xvld_%d' % i],i,options['results_dir']) # Plot switched time-histories
+# for i in range(1,options['latentCdim']):
+#     PlotSwitchedTHs(GiorgiaGAN,Xvld['Xvld_%d' % 0],Xvld['Xvld_%d' % i],i,options['results_dir']) # Plot switched time-histories
 
 
