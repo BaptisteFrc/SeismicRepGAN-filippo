@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+ # -*- coding: utf-8 -*-
 import tensorflow as tf
 import tensorflow_addons as tfa
 import tensorflow_probability as tfp
@@ -595,10 +595,10 @@ class RepGAN(tf.keras.Model):
         # h_n = kl.Dropout(0.2)(h_n)
 
         h_n = kl.Flatten(name="FxFLN{:>d}".format(layer+1))(h_n)
-        h_n = kl.Dense(1024)(h_n)
-        h_n = kl.BatchNormalization(momentum=0.95)(h_n)
-        h_n = kl.LeakyReLU(alpha=0.1)(h_n)
-        h_n = kl.Dense(self.latentNdim, name="FxFWN")(h_n)
+        # h_n = kl.Dense(1024)(h_n)
+        # h_n = kl.BatchNormalization(momentum=0.95)(h_n)
+        # h_n = kl.LeakyReLU(alpha=0.1)(h_n)
+        # h_n = kl.Dense(self.latentNdim, name="FxFWN")(h_n)
 
         # variable s
         s = sampleS(hs, self.latentSdim)
