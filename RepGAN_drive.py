@@ -62,7 +62,7 @@ def Train(options):
         GiorgiaGAN.Fx.summary()
         GiorgiaGAN.Gz.summary()
         # Compile the RepGAN model.
-        GiorgiaGAN.compile(optimizers, losses, metrics=[tf.keras.metrics.MeanSquaredError()])
+        GiorgiaGAN.compile(optimizers, losses, metrics=[tf.keras.metrics.Accuracy()])
 
         
         # Build shapes

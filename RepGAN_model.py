@@ -449,7 +449,8 @@ class RepGAN(tf.keras.Model):
         #self.RecXloss_tracker.update_state(X, X_rec)
         # Return a dict mapping metric names to current value.
         # Note that it will include the loss (tracked in self.metrics).
-        return {"RecXloss": self.loss_trackers["RecXloss_tracker"].result()}
+        return {"RecXloss": self.loss_trackers["RecXloss_tracker"].result(),
+                "Predloss": self.loss_trackers["Predloss_tracker"].result(),}
         #return {"RecXloss": RecXloss_tracker.result()}
 
     def call(self, X):
