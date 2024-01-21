@@ -134,20 +134,21 @@ def LoadData(**kwargs):
     fid_th = opj(store_dir,"Data_full.h5")
     
     h5f = h5py.File(fid_th,'r')
-    X = h5f['X'][:,650:1162,:]
+    X = h5f['X'][:,650:1130,:]
+    y = h5f['X'][:,682:1162,:]
     c = h5f['damage_class'][...]
     magnitude = h5f['magnitude'][...]
     d = h5f['damage_index'][...]
     h5f.close()
 
     # Split between train and validation set (time series and parameters are splitted in the same way)
-    Xtrn, Xvld, Ctrn, Cvld, Mtrn, Mvld, Dtrn, Dvld = train_test_split(X,c,magnitude,d,
+    Xtrn, Xvld, Ctrn, Cvld, Mtrn, Mvld, Dtrn, Dvld, ytrn, yvld = train_test_split(X,c,magnitude,d,y,
                                                                       random_state=0,
                                                                       test_size=0.1)
     
     return (
-        tf.data.Dataset.from_tensor_slices((Xtrn,Ctrn,Mtrn,Dtrn)).batch(batchSize),
-        tf.data.Dataset.from_tensor_slices((Xvld,Cvld,Mvld,Dvld)).batch(batchSize)
+        tf.data.Dataset.from_tensor_slices((Xtrn,Ctrn,Mtrn,Dtrn,ytrn)).batch(batchSize),
+        tf.data.Dataset.from_tensor_slices((Xvld,Cvld,Mvld,Dvld,ytrn)).batch(batchSize)
     )
 
 

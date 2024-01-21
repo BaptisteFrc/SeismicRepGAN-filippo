@@ -21,6 +21,7 @@ import tensorflow.keras.constraints as kc
 tfd = tfp.distributions
 
 loss_names = [
+    "Predloss",
     "AdvDlossX",
     "AdvDlossC",
     "AdvDlossS",
@@ -123,9 +124,10 @@ class RepGAN(tf.keras.Model):
         """
         self.Fx = self.BuildFx()
         self.Gz = self.BuildGz()
+        self.PredN = self.BuildPredN()
 
         self.models = [self.Dx, self.Dc, self.Ds, self.Dn,
-                       self.Fx, self.Gz]
+                       self.Fx, self.Gz, self.PredN]
 
     def compile(self, optimizers, losses, **kwargs):
 
@@ -249,7 +251,7 @@ class RepGAN(tf.keras.Model):
         return Dc_fake, Ds_fake, Dn_fake, Dc_real, Ds_real, Dn_real
     
     #@tf.function
-    def train_AE(self, X, c_prior):
+    def train_pred(self, X,y):
 
         # Sample factorial prior S
         s_prior = self.ps.sample(self.batchSize)
@@ -264,29 +266,34 @@ class RepGAN(tf.keras.Model):
             # Encode real signals X
             [_, s, c, n] = self.Fx(X, training=True)
 
+            # Predict N
+            n_pred = self.PredN(n, training=True)
+
             # Reconstruct real signals
-            X_rec = self.Gz((s, c, n), training=True)
+            y_pred = self.Gz((s, c, n_pred), training=True)
 
             # Compute loss
-            RexXloss = self.RecXloss(X, X_rec)
+            Predloss = self.Predloss(y, y_pred)
 
         # Compute the gradient
-        gradFx_w, gradGz_w = tape.gradient(RexXloss,
-                                            (self.Fx.trainable_variables,
+        gradPredN,gradFx_w,gradGz_w = tape.gradient(Predloss,(self.PredN.trainable_variables,
+                                            self.Fx.trainable_variables,
                                             self.Gz.trainable_variables),
                                             unconnected_gradients=tf.UnconnectedGradients.ZERO)
         
 
         # Update discriminators' weights
+        self.PredNOpt.apply_gradients(
+            zip(gradPredN, self.PredN.trainable_variables))
         self.FxOpt.apply_gradients(
             zip(gradFx_w, self.Fx.trainable_variables))
         self.GzOpt.apply_gradients(
             zip(gradGz_w, self.Gz.trainable_variables))
         
 
-        self.loss_val["RecXloss"] = RexXloss
+        self.loss_val["Predloss"] = Predloss
 
-        return X_rec, c, s, n
+        return y_pred, c, s, n
 
     #@tf.function
     def train_ZXZ(self, X, c_prior):
@@ -383,7 +390,7 @@ class RepGAN(tf.keras.Model):
     #@tf.function
     def train_step(self, XC):
         if isinstance(XC, tuple):
-            X, damage_class, magnitude, damage_index = XC
+            X, damage_class, magnitude, damage_index, y = XC
             #damage_class, magnitude, damage_index = metadata
 
         self.batchSize = tf.shape(X)[0]
@@ -394,10 +401,14 @@ class RepGAN(tf.keras.Model):
             ZXZout = self.train_ZXZ(X, damage_class)
         for _ in range(self.nXRepX):
             XZXout = self.train_XZX(X, damage_class)
+        for _ in range(2):
+            Predout = self.train_pred(X,y)
 
         (Dx_fake, Dx_real) = ZXZout
 
-        #(Dc_fake, Ds_fake, Dn_fake, Dc_real, Ds_real, Dn_real) = XZXout
+        (Dc_fake, Ds_fake, Dn_fake, Dc_real, Ds_real, Dn_real) = XZXout
+
+        (y_pred, c, s, n) = Predout
 
         # Compute our own metrics
         for k, v in self.loss_trackers.items():
@@ -481,6 +492,12 @@ class RepGAN(tf.keras.Model):
         [_, s_fake, c_fake, n_fake] = self.Fx(X)
         X_rec_new = self.Gz((s_fake, c_fake_new, n_fake), training=False)
         return X_rec_new
+
+    def pred(slef, X):
+        [_, s, c, n] = self.Fx(X,training=False)
+        n_pred = self.PredN(n)
+        y_pred = self.Gz((s, c, n_pred), training=False)
+        return y_pred
 
     # BN : do not apply batchnorm to the generator output layer and the discriminator input layer
     def BuildFx(self):
@@ -1058,3 +1075,15 @@ class RepGAN(tf.keras.Model):
                 1, kernel_constraint=ClipConstraint(self.clipValue))(h)
         Ds = tf.keras.Model(s, Ps, name="Ds")
         return Ds
+
+    def BuildPredN(self):
+        n=kl.Input(shape=(self.latentNdim,))
+        h=kl.Dense(1024)(n)
+        h=kl.LeakyReLU(alpha=0.1)(h)
+        h=kl.Dropout(0.25)(h)
+        h=kl.Dense(512)(h)
+        h=kl.LeakyReLU(alpha=0.1)(h)
+        h=kl.Dropout(0.25)(h)
+        h=kl.Dense(256)(h)
+        PredN=tf.keras.Model(n,h,name="PredN")
+        return PredN
