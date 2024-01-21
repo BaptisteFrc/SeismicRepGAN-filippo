@@ -25,6 +25,8 @@ tf.keras.backend.set_floatx('float32')
 gpu = tf.config.list_physical_devices('GPU')
 print("Num GPUs Available: ", len(gpu))
 tf.config.experimental.set_memory_growth(gpu[0], True)
+#tf.config.run_functions_eagerly(True)
+
 
 import MDOFload as mdof
 from plot_tools import *
@@ -88,7 +90,7 @@ def Train(options):
         history = GiorgiaGAN.fit(x=train_dataset,batch_size=options['batchSize'],
                                  epochs=options["epochs"],
                                  callbacks=[WandbMetricsLogger(log_freq='batch')],
-                                 validation_data=val_dataset,shuffle=True)#,validation_freq=100)
+                                 validation_data=val_dataset,shuffle=True,validation_freq=1)
 
         
 

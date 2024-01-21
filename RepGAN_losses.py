@@ -124,6 +124,7 @@ class HingeGANDiscriminatorLoss(kl.Loss):
         fake_loss = tf.reduce_mean(tf.nn.relu(1. + logitsDGz),axis=raxis)
         return self.λ*(real_loss + fake_loss)
 
+
 class WGANDiscriminatorLoss(kl.Loss):
     """
         Compute standard WGAN loss (complete)
@@ -134,7 +135,7 @@ class WGANDiscriminatorLoss(kl.Loss):
         self.raxis = raxis
         self.λ = λ
         
-    # #@tf.function
+    #@tf.function
     def call(self, DX, DGz):
         
         if not self.raxis:
@@ -145,6 +146,7 @@ class WGANDiscriminatorLoss(kl.Loss):
         EDX  = tf.reduce_mean(DX,axis=raxis)
         EDGz = tf.reduce_mean(DGz,axis=raxis)
         return self.λ*(EDGz-EDX)
+
 
 class WGANGeneratorLoss(kl.Loss):
     """

@@ -6,14 +6,15 @@
 #SBATCH --time=24:00:00
 
 ## For partition: either prod10, prod 20, prod 40 or prod80
-#SBATCH --partition=prod20
+#SBATCH --partition=prod10
 
 ## For gres: either 1g.10gb:[1:10] for prod10, 2g.20gb:[1:4] for prod20, 3g.40gb:1 for >
-#SBATCH --gres=gpu:2g.20gb:1
+#SBATCH --gres=gpu:1g.10gb:4
 
 ## For ntasks and cpus: total requested cpus (ntasks * cpus-per-task) must be in [1: 4 >
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 
 
-python RepGAN_drive.py --nX 2000 --cuda --epochs 50 --latentSdim 2 --latentNdim 256 --nXRepX 1 --nRepXRep 2 --nCritic 1 --nGenerator 5 --nSlayers 1 --nNlayers 1 --nClayers 1 --DxLR 0.00002 --DsLR 0.0001 --DnLR 0.0001 --DcLR 0.0001 --FxLR 0.00002 --GzLR 0.00002 --store_dir 'dataset' --checkpoint_dir 'dataset/checkpoint' --results_dir 'dataset/results' --trainVeval 'TRAIN'
+python RepGAN_drive.py --nX 2000 --cuda --epochs 100 --latentSdim 2 --latentNdim 256 --nXRepX 3 --nRepXRep 1 --nCritic 1 --nGenerator 3 --nSlayers 1 --nNlayers 1 --nClayers 1 --DxLR 0.00002 --DsLR 0.0001 --DnLR 0.0001 --DcLR 0.0001 --FxLR 0.0001 --GzLR 0.0001 --store_dir 'dataset' --checkpoint_dir 'dataset/checkpoint' --results_dir 'dataset/results/avecC' --trainVeval 'TRAIN'
+#python post_processing.py --nX 2000 --epochs 1 --latentSdim 2 --latentNdim 256 --nXRepX 1 --nRepXRep 1 --nCritic 1 --nGenerator 3 --nSlayers 1 --nNlayers 1 --nClayers 1 --DxLR 0.00002 --DsLR 0.0001 --DnLR 0.0001 --DcLR 0.0001 --FxLR 0.00002 --GzLR 0.00002 --store_dir 'dataset' --checkpoint_dir 'dataset/checkpoint' --results_dir 'dataset/results/avecC' --trainVeval 'EVAL'

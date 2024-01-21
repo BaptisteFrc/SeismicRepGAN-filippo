@@ -27,7 +27,7 @@ def ParseOptions():
                         help='Number of epochs')
     parser.add_argument("--Xsize",
                         type=int,
-                        default=2048,
+                        default=512,
                         help='Data space size')
     parser.add_argument("--nX",
                         type=int,

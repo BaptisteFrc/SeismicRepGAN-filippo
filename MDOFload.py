@@ -134,7 +134,7 @@ def LoadData(**kwargs):
     fid_th = opj(store_dir,"Data_full.h5")
     
     h5f = h5py.File(fid_th,'r')
-    X = h5f['X'][...]
+    X = h5f['X'][:,650:1162,:]
     c = h5f['damage_class'][...]
     magnitude = h5f['magnitude'][...]
     d = h5f['damage_index'][...]
