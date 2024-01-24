@@ -425,20 +425,24 @@ class RepGAN(tf.keras.Model):
     @tf.function
     def test_step(self, XC):
         if isinstance(XC, tuple):
-            X, c,mag, di = XC
+            X, c,mag, di, y = XC
             #c, mag, di = c
-        # Compute predictions
+     
         #X_rec, c_fake, s_fake, n_fake = self(X, training=False)
         [_, s, c, n] = self.Fx(X, training=False)
 
         # Reconstruct real signals
         X_rec = self.Gz((s, c, n), training=False)
-    
+        # Compute predictions
+        n_pred = self.PredN(n, training=False)
+        X_pred = self.Gz((s, c, n_pred), training=False)
+
         # Updates the metrics tracking the loss
         RecXloss=self.RecXloss(X, X_rec)
+        Predloss=self.Predloss(y, X_pred)
         self.loss_trackers["RecXloss_tracker"].update_state(RecXloss)
-        #self.loss_val["RecXloss"] = RexXloss
-        
+        self.loss_trackers["Predloss_tracker"].update_state(Predloss)
+
         # for k, v in self.loss_trackers.items():
         #     v.update_state(self.loss_val[k.strip("_tracker")])
 
@@ -494,7 +498,7 @@ class RepGAN(tf.keras.Model):
         X_rec_new = self.Gz((s_fake, c_fake_new, n_fake), training=False)
         return X_rec_new
 
-    def pred(slef, X):
+    def pred(self, X):
         [_, s, c, n] = self.Fx(X,training=False)
         n_pred = self.PredN(n)
         y_pred = self.Gz((s, c, n_pred), training=False)

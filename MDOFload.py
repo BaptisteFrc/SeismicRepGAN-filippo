@@ -148,7 +148,7 @@ def LoadData(**kwargs):
     
     return (
         tf.data.Dataset.from_tensor_slices((Xtrn,Ctrn,Mtrn,Dtrn,ytrn)).batch(batchSize),
-        tf.data.Dataset.from_tensor_slices((Xvld,Cvld,Mvld,Dvld,ytrn)).batch(batchSize)
+        tf.data.Dataset.from_tensor_slices((Xvld,Cvld,Mvld,Dvld,yvld)).batch(batchSize)
     )
 
 

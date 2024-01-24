@@ -180,13 +180,16 @@ def arias_intensity(dtm,tha,pc=0.95,nf=9.81):
 
 def PlotReconstructedTHs(model,realXC,results_dir):
     # Plot reconstructed time-histories
-    realX = np.concatenate([x for x, c, m, d in realXC], axis=0)
-    realC = np.concatenate([c for x, c, m, d in realXC], axis=0)
-    mag = np.concatenate([m for x, c, m, d in realXC], axis=0)
-    di = np.concatenate([d for x, c, m, d in realXC], axis=0)
+    realX = np.concatenate([x for x, c, m, d, y in realXC], axis=0)
+    realC = np.concatenate([c for x, c, m, d, y in realXC], axis=0)
+    mag = np.concatenate([m for x, c, m, d, y in realXC], axis=0)
+    di = np.concatenate([d for x, c, m, d, y in realXC], axis=0)
+    y = np.concatenate([y for x, c, m, d, y in realXC], axis=0)
 
     recX,fakeC,fakeS,fakeN,fakeX = model.plot(realX,realC)
-
+    print(recX.shape)
+    y_pred = model.pred(realX)
+    print(y_pred.shape)
     t = np.zeros(realX.shape[1])
     for k in range(realX.shape[1]-1):
         t[k+1] = (k+1)*0.04
@@ -217,6 +220,22 @@ def PlotReconstructedTHs(model,realXC,results_dir):
             #plt.savefig(results_dir + '/reconstruction_{:>d}_{:>d}.eps'.format(j,i),bbox_inches = 'tight',dpi=200)
             plt.close()
 
+            #plot predicted
+            hfg = plt.figure(figsize=(12,6),tight_layout=True)
+            hax = hfg.add_subplot(111)
+            hax.plot(t,y[i,:,j], color='black')
+            hax.plot(t,y_pred[i,:,j], color='red',linestyle="--")
+            hax.plot(t[:-32],y_pred[i,:-32,j], color='orange',linestyle="--")
+            #hax.set_title(r'$X \hspace{0.5} reconstruction$', fontsize=22,fontweight='bold')
+            hax.set_ylabel(r'$X(t) \hspace{0.5} [1]$', fontsize=26,fontweight='bold')
+            hax.set_xlabel(r'$t \hspace{0.5} [s]$', fontsize=26,fontweight='bold')
+            hax.legend([r'$y$', r"$y_{pred}$"], loc='best',frameon=False,fontsize=20)
+            hax.set_ylim([-1.0, 1.0])
+            hax.tick_params(axis='both', labelsize=18)
+            plt.savefig(results_dir + '/prediction_{:>d}_{:>d}.png'.format(j,i),bbox_inches = 'tight')
+            #plt.savefig(results_dir + '/reconstruction_{:>d}_{:>d}.eps'.format(j,i),bbox_inches = 'tight',dpi=200)
+            plt.close()
+            
 
             hfg = plt.figure(figsize=(12,6),tight_layout=True)
             hax = hfg.add_subplot(111)
@@ -235,6 +254,8 @@ def PlotReconstructedTHs(model,realXC,results_dir):
             plt.savefig(results_dir + '/fft_{:>d}_{:>d}.png'.format(j,i),bbox_inches = 'tight')
             #plt.savefig(results_dir + '/fft_{:>d}_{:>d}.eps'.format(j,i),bbox_inches = 'tight',dpi=200)
             plt.close()
+
+
 
 def cross_2d_dam(und,dam,i0,dt,nw,kspec,fmin,fmax,tmin,tmax):
     

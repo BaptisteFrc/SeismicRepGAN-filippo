@@ -313,7 +313,7 @@ def getOptimizers(**kwargs):
         optimizers['FxOpt'] = Adam(learning_rate=FxLR, beta_1=0.5, beta_2=0.9999)
         optimizers['GzOpt'] = Adam(learning_rate=GzLR, beta_1=0.5, beta_2=0.9999)
 
-    optimizers['PredNOpt']= Adam(learning_rate=0.0002, beta_1=0.5, beta_2=0.9999)
+    optimizers['PredNOpt']= Adam(learning_rate=0.0001, beta_1=0.5, beta_2=0.9999)
     
     return optimizers
 
