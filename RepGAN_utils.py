@@ -131,19 +131,19 @@ def ParseOptions():
                         help='input batch size')    
     parser.add_argument("--DxTrainType", 
                         type=str, 
-                        default='WGAN',
+                        default='GAN',
                         help='Train Dx with GAN, WGAN or WGANGP')
     parser.add_argument("--DcTrainType", 
                         type=str, 
-                        default='WGAN',
+                        default='GAN',
                         help='Train Dc with GAN, WGAN or WGANGP')
     parser.add_argument("--DsTrainType", 
                         type=str, 
-                        default='WGAN',
+                        default='GAN',
                         help='Train Ds with GAN, WGAN or WGANGP')
     parser.add_argument("--DnTrainType", 
                         type=str, 
-                        default='WGAN',
+                        default='GAN',
                         help='Train Dn with GAN, WGAN or WGANGP')
     parser.add_argument("--DxSN", 
                         action='store_true',
