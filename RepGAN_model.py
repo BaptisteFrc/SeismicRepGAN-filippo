@@ -32,7 +32,8 @@ loss_names = [
     "RecXloss",
     "RecCloss",
     "RecSloss",
-    "FakeCloss"]
+    "FakeCloss",
+    "RecNloss",]
 
 #loss_names = ["RecXloss","AdvGlossX","AdvDlossX","AdvDlossC","AdvGlossC","RecCloss",]
 
@@ -351,14 +352,15 @@ class RepGAN(tf.keras.Model):
                 AdvGlossX = self.AdvGlossX(None, Dx_fake)
 
                 # Encode fake signals
-                [hs, s_rec, c_rec, _] = self.Fx(X_fake, training=True)
+                [hs, s_rec, c_rec, n_rec] = self.Fx(X_fake, training=True)
                 # # Q_cont_distribution = tfp.distributions.MultivariateNormalDiag(loc=μs_rec, scale_diag=logΣs_rec)
                 # RecSloss = -tf.reduce_mean(Q_cont_distribution.log_prob(s_rec))
-                RecSloss = self.RecSloss(s_prior, hs)
+                RecSloss = self.RecSloss(s_prior, s_rec)
                 RecCloss = self.RecCloss(c_prior, c_rec)
+                RecNloss = self.RecNloss(n_prior, n_rec)
 
                 # Compute InfoGAN Q loos
-                Qloss = RecSloss + RecCloss
+                Qloss = RecSloss + RecCloss + RecNloss
 
                 # Total ZXZ generator loss
                 GeneratorLossZXZ = AdvGlossX + Qloss
@@ -377,6 +379,7 @@ class RepGAN(tf.keras.Model):
             self.loss_val["AdvGlossX"] = AdvGlossX
             self.loss_val["RecSloss"] = RecSloss
             self.loss_val["RecCloss"] = RecCloss
+            self.loss_val["RecNloss"] = RecNloss
 
         return Dx_fake, Dx_real
 

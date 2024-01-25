@@ -369,6 +369,7 @@ def getLosses(**kwargs):
     
     losses['RecSloss']  = GaussianNLL(λ=PenRecSloss)
     losses['RecXloss']  = kl.MeanSquaredError()
+    losses['RecNloss']  = kl.MeanSquaredError()
     losses['RecCloss']  = InfoLoss(λ=PenRecCloss)
     losses['FakeCloss'] = kl.CategoricalCrossentropy(from_logits=True)
     #import pdb

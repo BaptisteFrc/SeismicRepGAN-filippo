@@ -1,8 +1,8 @@
 #!/bin/bash
 #
 #SBATCH --job-name=RepGAN
-#SBATCH --output out_2.out
-#SBATCH --error error_2.err
+#SBATCH --output out_1.out
+#SBATCH --error error_1.err
 #SBATCH --time=24:00:00
 
 ## For partition: either prod10, prod 20, prod 40 or prod80
@@ -16,5 +16,5 @@
 #SBATCH --cpus-per-task=4
 
 
-python RepGAN_drive.py --nX 2000 --cuda --epochs 100 --latentSdim 2 --latentNdim 256 --nXRepX 1 --nRepXRep 1 --nCritic 1 --nGenerator 5 --nSlayers 1 --nNlayers 1 --nClayers 1 --DxLR 0.00002 --DsLR 0.0001 --DnLR 0.0001 --DcLR 0.0001 --FxLR 0.0001 --GzLR 0.0001 --store_dir 'dataset' --checkpoint_dir 'dataset/checkpoint' --results_dir 'dataset/results/gan2' --trainVeval 'TRAIN'
+python RepGAN_drive.py --nX 2000 --cuda --epochs 100 --latentSdim 2 --latentNdim 256 --nXRepX 1 --nRepXRep 3 --nCritic 1 --nGenerator 3 --nSlayers 1 --nNlayers 1 --nClayers 1 --DxLR 0.00002 --DsLR 0.0001 --DnLR 0.0001 --DcLR 0.0001 --FxLR 0.000002 --GzLR 0.000002 --store_dir 'dataset' --checkpoint_dir 'dataset/checkpoint' --results_dir 'dataset/results/gan3' --trainVeval 'TRAIN'
 #python post_processing.py --nX 2000 --epochs 1 --latentSdim 2 --latentNdim 256 --nXRepX 1 --nRepXRep 1 --nCritic 1 --nGenerator 3 --nSlayers 1 --nNlayers 1 --nClayers 1 --DxLR 0.00002 --DsLR 0.0001 --DnLR 0.0001 --DcLR 0.0001 --FxLR 0.00002 --GzLR 0.00002 --store_dir 'dataset' --checkpoint_dir 'dataset/checkpoint' --results_dir 'dataset/results/avecC' --trainVeval 'EVAL'
