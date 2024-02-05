@@ -1,0 +1,301 @@
+import glob
+import tensorflow as tf
+import numpy as np
+import pandas as pd
+import os
+from os.path import join as opj
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler,MinMaxScaler,MaxAbsScaler
+from sklearn.utils import shuffle
+import dask as ds
+import dask.delayed as dd
+import dask.dataframe as df
+import dask.array as da
+import h5py
+from matplotlib import pyplot as plt
+import seaborn as sn
+import sys
+import csv
+from random import randint
+
+import torch
+from torchvision import datasets
+from torchvision import transforms
+from IPython.display import Image
+import scipy
+
+from matplotlib import cm
+from mpl_toolkits.mplot3d import axes3d, Axes3D
+from matplotlib.colors import ListedColormap
+
+#Use of wandb for visualization
+import wandb
+import pprint
+wandb.login()
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(device)
+
+#Loading the data
+store_dir="input_data"
+def LoadData():
+    # LoadData.__globals__.update(kwargs)
+
+    fid_th = opj(store_dir,"Data2.h5")
+
+    h5f = h5py.File("Data2.h5",'r')
+    X = h5f['X'][...]
+    # c = h5f['damage_class'][...]
+    # magnitude = h5f['magnitude'][...]
+    # d = h5f['damage_index'][...]
+    h5f.close()
+
+    # Split between train and validation set (time series and parameters are splitted in the same way)
+    Xtrn, Xvld = train_test_split(X, random_state=0, test_size=0.1)
+
+    # return (
+    #     tf.data.Dataset.from_tensor_slices((Xtrn,(Ctrn,Mtrn,Dtrn))).batch(batchSize),
+    #     tf.data.Dataset.from_tensor_slices((Xvld,(Cvld,Mvld,Dvld))).batch(batchSize)
+    #     )
+
+    return Xtrn, Xvld
+
+Xtrn, Xvld=LoadData()
+
+#Data processing
+def vect_sigm(tab) :
+  M,N,P=tab.shape
+  res=np.zeros((M,N,P))
+  for i in range(M) :
+    for j in range(N) :
+      for k in range(P) :
+        res[i,j,k] = 1/(1+np.exp(-tab[i,j,k]))
+  return res
+
+Xvld = vect_sigm(Xvld)
+Xtrn = vect_sigm(Xtrn)
+xvld = torch.tensor(Xvld[:,20:261,:]).to(torch.float32)
+xtrn = torch.tensor(Xtrn[:,20:261,:]).to(torch.float32)
+
+#Data visualization
+fig, ax = plt.subplots(figsize=(8,4))
+colors = cm.rainbow(np.linspace(0, 1, xtrn.shape[0]))
+for i, (yp, c) in enumerate(zip(xtrn, colors)):
+    ax.plot(yp, linewidth=0.5, color=c)
+ax.set_xlabel("$t [s]$")
+ax.set_ylabel(r"$x_g(t)$")
+# ax.set_yticks([])
+ax.set_title('Input ground motion')
+
+#Function to add zeroes to the vector in input of the LSTM layer
+def fill_with_zeros(x) :
+    if len(x.size())==3 :
+      n,m,p=x.size()
+      res=torch.Tensor(np.zeros((n,m,p+5)))
+      for i in range(n) :
+        for j in range(m) :
+          res[i,j,:-5]=x[i,j,:]
+    else :
+      n,m=x.size()
+      res=torch.Tensor(np.zeros((n,m+5)))
+      for i in range(n) :
+        res[i,:-5]=x[i,:]
+    return res.to(device)
+
+#Definition of the models
+class lstm_conv_AE(torch.nn.Module):
+    def __init__(self, input_size, hidden_size, output_size, kernel_size, stride, padding):
+        super(lstm_conv_AE, self).__init__()
+        # self.lstm_instance = LSTM(input_size_lstm, output_size_lstm, hidden_dim_lstm, n_layers_lstm)
+
+        # Encoder
+        self.encoder = torch.nn.Sequential(
+            torch.nn.Conv1d(in_channels=input_size, out_channels=hidden_size[0, 0], kernel_size=kernel_size, stride=stride, padding=padding),
+            torch.nn.ReLU(),
+            torch.nn.Conv1d(in_channels=hidden_size[0, 0], out_channels=hidden_size[0, 1], kernel_size=kernel_size, stride=stride, padding=padding),
+            torch.nn.ReLU(),
+            torch.nn.Conv1d(in_channels=hidden_size[0, 1], out_channels=hidden_size[0, 2], kernel_size=kernel_size, stride=stride, padding=padding),
+            torch.nn.ReLU(),
+            torch.nn.Conv1d(in_channels=hidden_size[0, 2], out_channels=output_size, kernel_size=kernel_size, stride=stride, padding=padding),
+            torch.nn.ReLU(),
+        )
+
+        # LSTM layer
+        self.lstm = torch.nn.LSTM(input_size=64, hidden_size=64, num_layers=1, batch_first=True)
+
+        # Decoder
+        self.decoder = torch.nn.Sequential(
+            torch.nn.ConvTranspose1d(in_channels=output_size, out_channels=hidden_size[1, 0], kernel_size=kernel_size, stride=2, padding=padding),
+            torch.nn.ReLU(),
+            torch.nn.ConvTranspose1d(in_channels=hidden_size[1, 0], out_channels=hidden_size[1, 1], kernel_size=kernel_size, stride=stride, padding=padding),
+            torch.nn.ReLU(),
+            torch.nn.ConvTranspose1d(in_channels=hidden_size[1, 1], out_channels=hidden_size[1, 2], kernel_size=kernel_size, stride=stride, padding=padding),
+            torch.nn.ReLU(),
+            torch.nn.ConvTranspose1d(in_channels=hidden_size[1, 2], out_channels=input_size, kernel_size=kernel_size, stride=stride, padding=padding)#,
+            # nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        if len(x.size())==3 :
+          i,j=1,2
+        else :
+          i,j=0,1
+        x = np.swapaxes(x,i,j)
+        x = self.encoder(x)
+        x = fill_with_zeros(x)
+        x = np.swapaxes(x,i,j)
+        x, ras = self.lstm(x)
+        x = torch.nn.functional.relu(x)
+        x = np.swapaxes(x,i,j)
+        x = self.decoder(x)
+        x = np.swapaxes(x,i,j)
+        return x
+
+class conv_AE(torch.nn.Module):
+    def __init__(self, input_size, hidden_size, output_size, kernel_size, stride, padding):
+        super(conv_AE, self).__init__()
+        # self.lstm_instance = LSTM(input_size_lstm, output_size_lstm, hidden_dim_lstm, n_layers_lstm)
+
+        # Encoder
+        self.encoder = torch.nn.Sequential(
+            torch.nn.Conv1d(in_channels=input_size, out_channels=hidden_size[0, 0], kernel_size=kernel_size, stride=stride, padding=padding),
+            torch.nn.ReLU(),
+            torch.nn.Conv1d(in_channels=hidden_size[0, 0], out_channels=hidden_size[0, 1], kernel_size=kernel_size, stride=stride, padding=padding),
+            torch.nn.ReLU(),
+            torch.nn.Conv1d(in_channels=hidden_size[0, 1], out_channels=hidden_size[0, 2], kernel_size=kernel_size, stride=stride, padding=padding),
+            torch.nn.ReLU(),
+            torch.nn.Conv1d(in_channels=hidden_size[0, 2], out_channels=output_size, kernel_size=kernel_size, stride=stride, padding=padding),
+            torch.nn.ReLU(),
+        )
+
+        # Decoder
+        self.decoder = torch.nn.Sequential(
+            torch.nn.ConvTranspose1d(in_channels=output_size, out_channels=hidden_size[1, 0], kernel_size=kernel_size, stride=3, padding=padding),
+            torch.nn.ReLU(),
+            torch.nn.ConvTranspose1d(in_channels=hidden_size[1, 0], out_channels=hidden_size[1, 1], kernel_size=kernel_size, stride=stride, padding=padding),
+            torch.nn.ReLU(),
+            torch.nn.ConvTranspose1d(in_channels=hidden_size[1, 1], out_channels=hidden_size[1, 2], kernel_size=kernel_size, stride=stride, padding=padding),
+            torch.nn.ReLU(),
+            torch.nn.ConvTranspose1d(in_channels=hidden_size[1, 2], out_channels=input_size, kernel_size=kernel_size, stride=stride, padding=padding)#,
+            # nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        if len(x.size())==3 :
+          i,j=1,2
+        else :
+          i,j=0,1
+        x = np.swapaxes(x,i,j)
+        x = self.encoder(x)
+        x = self.decoder(x)
+        x = np.swapaxes(x,i,j)
+        return x
+
+# Hyperparameters values
+input_size = 4
+hidden_size = np.array([[8, 16, 32], [32, 16, 8]])
+output_size = 64
+kernel_size = 3
+stride = 2
+padding = 1
+
+#Definition of sweep parameters to test several values
+sweep_config = {'name':'conv_lstm',
+    'method': 'grid'
+    }
+
+parameters_dict = {
+    'epochs': {
+        'values': [1200]
+        },
+    'batch_size': {
+          'values': [16]
+        },
+    'learning_rate':{'value': 1e-3},
+    }
+
+sweep_config['parameters'] = parameters_dict
+pprint.pprint(sweep_config)
+sweep_id = wandb.sweep(sweep_config, project="project_name")
+
+#Definition of the train function (entity = your wandb account)
+def train(config=None) :
+  with wandb.init(config=config, entity='wandb_account') :
+    config=wandb.config
+
+    # Model Initialization
+    model = conv_AE(input_size, hidden_size, output_size, kernel_size, stride, padding)
+    model = model.to(device)
+
+    # Validation using MSE Loss function
+    loss_function = torch.nn.MSELoss()
+
+    # Using an Adam Optimizer
+    optimizer = torch.optim.Adam(model.parameters(),
+                                lr = config.learning_rate,
+                            weight_decay = 1e-8)
+
+    epochs = config.epochs
+    losses = []
+    test_losses = []
+
+    loader = torch.utils.data.DataLoader(dataset = xtrn,
+                                        batch_size = config.batch_size,
+                                        shuffle = True)
+
+    test_loader = torch.utils.data.DataLoader(dataset = xvld,
+                                              batch_size = 32,
+                                              shuffle = True)
+
+    for epoch in range(epochs):
+        model.train()
+        train_loss=0
+        for time_s in loader:
+          time_s=time_s.to(device)
+          # Reshaping the image to (-1, 784)
+          time_s_2 = time_s[:,0:161,:].to(device)
+
+          # Output of Autoencoder
+          reconstructed = model(time_s_2)
+
+          # Calculating the loss function
+          loss = loss_function(reconstructed, time_s)
+
+          # The gradients are set to zero,
+          # the gradient is computed and stored.
+          # .step() performs parameter update
+          optimizer.zero_grad()
+          loss.backward()
+          optimizer.step()
+
+        # Storing the losses in a list for plotting
+          train_loss+=torch.Tensor.cpu(time_s.size()[0]*loss.detach()).numpy()
+
+        losses.append(train_loss/xtrn.size()[0])
+        model.eval()
+        test_loss=0
+        for time_s in test_loader:
+          time_s=time_s.to(device)
+          time_s_2 = time_s[:,0:161,:]
+
+          # Output of Autoencoder
+          reconstructed = model(time_s_2)
+
+          # Calculating the loss function
+          loss = loss_function(reconstructed, time_s)
+
+          # Storing the losses in a list for plotting
+          test_loss+=torch.Tensor.cpu(time_s.size()[0]*loss.detach()).numpy()
+        test_losses.append(test_loss/xvld.size()[0])
+      #Storing the losses on wandb
+        wandb.log({"test loss": test_losses[-1], "train loss": losses[-1]})
+    torch.save(model.state_dict(), f"my_model_conv_b{config.batch_size}_lr{config.learning_rate}_ep{config.epochs}.pth")
+    wandb.save(f"my_model_conv_b{config.batch_size}_lr{config.learning_rate}_ep{config.epochs}.pth")
+
+#Start of the training
+wandb.agent(sweep_id, train, count=1)
+
+#Loading the model (the model name must be changed according to the name chosen when it was created)
+model = conv_AE(input_size, hidden_size, output_size, kernel_size, stride, padding)
+best_model = wandb.restore('my_model_conv_b16_lr0.001_ep1200.pth', run_path="wandb_account/project_name/run_name")
+model.load_state_dict(torch.load('my_model_conv_b16_lr0.001_ep1200.pth', map_location=torch.device('cpu')))
+model.to(device)
