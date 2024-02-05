@@ -18,7 +18,7 @@ from mpl_toolkits.mplot3d import axes3d, Axes3D
 from matplotlib.colors import ListedColormap
 
 #Importation of the models
-from models_tested import resnet_AE, lstm_resnet_AE, lstm_conv_AE, conv_AE
+from models_tested import resnet_AE, lstm_resnet_AE, lstm_conv_AE, conv_AE, linear_encoder, linear_decoder
 
 #Use of wandb for visualization
 import wandb
@@ -115,8 +115,17 @@ def train(config=None) :
   with wandb.init(config=config, entity='wandb_account') :
     config=wandb.config
 
-    # Model Initialization
+    # Model Initialization (choose the model you want to train)
+    #Model conv  
     model = conv_AE(input_size, hidden_size, output_size, kernel_size, stride, padding)
+    #Model Linear
+    #linear_encoder().reset_parameters()
+    #linear_decoder().reset_parameters()
+    #lstm_AE = torch.nn.Sequential(lstm_encoder(),lstm_decoder())
+    #model = lstm_AE
+    #Model Resnet LSTM
+    #model = lstm_resnet_AE(input_size, hidden_size, output_size, kernel_size, stride, padding)
+      
     model = model.to(device)
 
     # Validation using MSE Loss function
@@ -170,7 +179,7 @@ def train(config=None) :
           time_s=time_s.to(device)
           time_s_2 = time_s[:,0:161,:]
 
-          # Output of Autoencoder
+          # Output of Autoencoder (the reconstruction is made from the cropped signal)
           reconstructed = model(time_s_2)
 
           # Calculating the loss function
@@ -192,3 +201,10 @@ model = conv_AE(input_size, hidden_size, output_size, kernel_size, stride, paddi
 best_model = wandb.restore('my_model_conv_b16_lr0.001_ep1200.pth', run_path="wandb_account/project_name/run_name")
 model.load_state_dict(torch.load('my_model_conv_b16_lr0.001_ep1200.pth', map_location=torch.device('cpu')))
 model.to(device)
+
+#The prediction can be compared to the original signal for one sample
+# time_s = xvld[3].to(device)
+# time_s_2 = time_s[0:161,:]
+# res=model(time_s_2).cpu().detach().numpy()
+# plt.plot(time_s[:,0].cpu(), 'r')
+# plt.plot(res[:,0], 'b')
