@@ -212,3 +212,77 @@ class resnet_AE(torch.nn.Module):
         x = self.decoder(x)
         x = np.swapaxes(x,i,j)
         return x
+
+## Linear models
+
+#Encoder with Linear layers
+class linear_encoder(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.linear1 = torch.nn.Linear(161, 128)
+        self.linear2 = torch.nn.Linear(128, 64)
+        self.linear3 = torch.nn.Linear(64, 36)
+        self.linear4 = torch.nn.Linear(36, 18)
+        self.linear5 = torch.nn.Linear(18, 9)
+
+    def reset_parameters(self):
+        list_layer=[self.linear1,self.linear2,self.linear3,self.linear4,self.linear5]
+        for layer in list_layer:
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
+    def forward(self, x):
+        if len(x.size())==3 :
+          i,j=1,2
+        else :
+          i,j=0,1
+        x = np.swapaxes(x,i,j)
+        x = self.linear1(x)
+        x = torch.nn.functional.relu(x)
+        x = self.linear2(x)
+        x = torch.nn.functional.relu(x)
+        x = self.linear3(x)
+        x = torch.nn.functional.relu(x)
+        x = self.linear4(x)
+        x = torch.nn.functional.relu(x)
+        x = self.linear5(x)
+        x = torch.nn.functional.relu(x)
+        x = np.swapaxes(x,i,j)
+        return x
+
+#Decoder with Linear layers
+
+class linear_decoder(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.linear1 = torch.nn.Linear(9, 18)
+        self.linear2 = torch.nn.Linear(18, 36)
+        self.linear3 = torch.nn.Linear(36, 64)
+        self.linear4 = torch.nn.Linear(64, 128)
+        self.linear5 = torch.nn.Linear(128, 241)
+
+    def reset_parameters(self):
+        list_layer=[self.linear1,self.linear2,self.linear3,self.linear4,self.linear5]
+        for layer in list_layer:
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
+    def forward(self, x):
+        if len(x.size())==3 :
+          i,j=1,2
+        else :
+          i,j=0,1
+        x = np.swapaxes(x,i,j)
+        x = self.linear1(x)
+        x = torch.nn.functional.relu(x)
+        x = self.linear2(x)
+        x = torch.nn.functional.relu(x)
+        x = self.linear3(x)
+        x = torch.nn.functional.relu(x)
+        x = self.linear4(x)
+        x = torch.nn.functional.relu(x)
+        x = self.linear5(x)
+        x = np.swapaxes(x,i,j)
+        return x
