@@ -1,3 +1,4 @@
+#Importation of the useful libraries
 import glob
 import tensorflow as tf
 import numpy as np
@@ -12,10 +13,12 @@ import torch
 from torchvision import datasets
 from torchvision import transforms
 import scipy
-
 from matplotlib import cm
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 from matplotlib.colors import ListedColormap
+
+#Importation of the models
+from models_tested import resnet_AE, lstm_resnet_AE, lstm_conv_AE, conv_AE
 
 #Use of wandb for visualization
 import wandb
@@ -80,96 +83,7 @@ def fill_with_zeros(x) :
         res[i,:-5]=x[i,:]
     return res.to(device)
 
-#Definition of the models
-class lstm_conv_AE(torch.nn.Module):
-    def __init__(self, input_size, hidden_size, output_size, kernel_size, stride, padding):
-        super(lstm_conv_AE, self).__init__()
-        # self.lstm_instance = LSTM(input_size_lstm, output_size_lstm, hidden_dim_lstm, n_layers_lstm)
-
-        # Encoder
-        self.encoder = torch.nn.Sequential(
-            torch.nn.Conv1d(in_channels=input_size, out_channels=hidden_size[0, 0], kernel_size=kernel_size, stride=stride, padding=padding),
-            torch.nn.ReLU(),
-            torch.nn.Conv1d(in_channels=hidden_size[0, 0], out_channels=hidden_size[0, 1], kernel_size=kernel_size, stride=stride, padding=padding),
-            torch.nn.ReLU(),
-            torch.nn.Conv1d(in_channels=hidden_size[0, 1], out_channels=hidden_size[0, 2], kernel_size=kernel_size, stride=stride, padding=padding),
-            torch.nn.ReLU(),
-            torch.nn.Conv1d(in_channels=hidden_size[0, 2], out_channels=output_size, kernel_size=kernel_size, stride=stride, padding=padding),
-            torch.nn.ReLU(),
-        )
-
-        # LSTM layer
-        self.lstm = torch.nn.LSTM(input_size=64, hidden_size=64, num_layers=1, batch_first=True)
-
-        # Decoder
-        self.decoder = torch.nn.Sequential(
-            torch.nn.ConvTranspose1d(in_channels=output_size, out_channels=hidden_size[1, 0], kernel_size=kernel_size, stride=2, padding=padding),
-            torch.nn.ReLU(),
-            torch.nn.ConvTranspose1d(in_channels=hidden_size[1, 0], out_channels=hidden_size[1, 1], kernel_size=kernel_size, stride=stride, padding=padding),
-            torch.nn.ReLU(),
-            torch.nn.ConvTranspose1d(in_channels=hidden_size[1, 1], out_channels=hidden_size[1, 2], kernel_size=kernel_size, stride=stride, padding=padding),
-            torch.nn.ReLU(),
-            torch.nn.ConvTranspose1d(in_channels=hidden_size[1, 2], out_channels=input_size, kernel_size=kernel_size, stride=stride, padding=padding)#,
-            # nn.Sigmoid()
-        )
-
-    def forward(self, x):
-        if len(x.size())==3 :
-          i,j=1,2
-        else :
-          i,j=0,1
-        x = np.swapaxes(x,i,j)
-        x = self.encoder(x)
-        x = fill_with_zeros(x)
-        x = np.swapaxes(x,i,j)
-        x, ras = self.lstm(x)
-        x = torch.nn.functional.relu(x)
-        x = np.swapaxes(x,i,j)
-        x = self.decoder(x)
-        x = np.swapaxes(x,i,j)
-        return x
-
-class conv_AE(torch.nn.Module):
-    def __init__(self, input_size, hidden_size, output_size, kernel_size, stride, padding):
-        super(conv_AE, self).__init__()
-        # self.lstm_instance = LSTM(input_size_lstm, output_size_lstm, hidden_dim_lstm, n_layers_lstm)
-
-        # Encoder
-        self.encoder = torch.nn.Sequential(
-            torch.nn.Conv1d(in_channels=input_size, out_channels=hidden_size[0, 0], kernel_size=kernel_size, stride=stride, padding=padding),
-            torch.nn.ReLU(),
-            torch.nn.Conv1d(in_channels=hidden_size[0, 0], out_channels=hidden_size[0, 1], kernel_size=kernel_size, stride=stride, padding=padding),
-            torch.nn.ReLU(),
-            torch.nn.Conv1d(in_channels=hidden_size[0, 1], out_channels=hidden_size[0, 2], kernel_size=kernel_size, stride=stride, padding=padding),
-            torch.nn.ReLU(),
-            torch.nn.Conv1d(in_channels=hidden_size[0, 2], out_channels=output_size, kernel_size=kernel_size, stride=stride, padding=padding),
-            torch.nn.ReLU(),
-        )
-
-        # Decoder
-        self.decoder = torch.nn.Sequential(
-            torch.nn.ConvTranspose1d(in_channels=output_size, out_channels=hidden_size[1, 0], kernel_size=kernel_size, stride=3, padding=padding),
-            torch.nn.ReLU(),
-            torch.nn.ConvTranspose1d(in_channels=hidden_size[1, 0], out_channels=hidden_size[1, 1], kernel_size=kernel_size, stride=stride, padding=padding),
-            torch.nn.ReLU(),
-            torch.nn.ConvTranspose1d(in_channels=hidden_size[1, 1], out_channels=hidden_size[1, 2], kernel_size=kernel_size, stride=stride, padding=padding),
-            torch.nn.ReLU(),
-            torch.nn.ConvTranspose1d(in_channels=hidden_size[1, 2], out_channels=input_size, kernel_size=kernel_size, stride=stride, padding=padding)#,
-            # nn.Sigmoid()
-        )
-
-    def forward(self, x):
-        if len(x.size())==3 :
-          i,j=1,2
-        else :
-          i,j=0,1
-        x = np.swapaxes(x,i,j)
-        x = self.encoder(x)
-        x = self.decoder(x)
-        x = np.swapaxes(x,i,j)
-        return x
-
-# Hyperparameters values
+# Hyperparameters values for Conv and Resnet models
 input_size = 4
 hidden_size = np.array([[8, 16, 32], [32, 16, 8]])
 output_size = 64
