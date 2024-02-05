@@ -2,26 +2,15 @@ import glob
 import tensorflow as tf
 import numpy as np
 import pandas as pd
-import os
 from os.path import join as opj
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler,MinMaxScaler,MaxAbsScaler
 from sklearn.utils import shuffle
-import dask as ds
-import dask.delayed as dd
-import dask.dataframe as df
-import dask.array as da
 import h5py
 from matplotlib import pyplot as plt
-import seaborn as sn
-import sys
 import csv
-from random import randint
-
 import torch
 from torchvision import datasets
 from torchvision import transforms
-from IPython.display import Image
 import scipy
 
 from matplotlib import cm
@@ -38,24 +27,15 @@ print(device)
 #Loading the data
 store_dir="input_data"
 def LoadData():
-    # LoadData.__globals__.update(kwargs)
 
     fid_th = opj(store_dir,"Data2.h5")
 
     h5f = h5py.File("Data2.h5",'r')
     X = h5f['X'][...]
-    # c = h5f['damage_class'][...]
-    # magnitude = h5f['magnitude'][...]
-    # d = h5f['damage_index'][...]
     h5f.close()
 
     # Split between train and validation set (time series and parameters are splitted in the same way)
     Xtrn, Xvld = train_test_split(X, random_state=0, test_size=0.1)
-
-    # return (
-    #     tf.data.Dataset.from_tensor_slices((Xtrn,(Ctrn,Mtrn,Dtrn))).batch(batchSize),
-    #     tf.data.Dataset.from_tensor_slices((Xvld,(Cvld,Mvld,Dvld))).batch(batchSize)
-    #     )
 
     return Xtrn, Xvld
 
@@ -83,7 +63,6 @@ for i, (yp, c) in enumerate(zip(xtrn, colors)):
     ax.plot(yp, linewidth=0.5, color=c)
 ax.set_xlabel("$t [s]$")
 ax.set_ylabel(r"$x_g(t)$")
-# ax.set_yticks([])
 ax.set_title('Input ground motion')
 
 #Function to add zeroes to the vector in input of the LSTM layer
