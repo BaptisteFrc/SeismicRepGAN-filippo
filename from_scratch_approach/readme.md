@@ -1,4 +1,4 @@
-# Certification and Robustness of Neural Networks by Gaussian Smoothing
+# Recherche autour des modèles diffusifs et génératifs. Pour surveiller et protéger les bâtiments historiques contre les risques naturels.
 
 ## Description of the project
 
