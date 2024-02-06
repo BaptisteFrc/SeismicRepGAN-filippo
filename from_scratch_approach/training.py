@@ -18,7 +18,7 @@ from mpl_toolkits.mplot3d import axes3d, Axes3D
 from matplotlib.colors import ListedColormap
 
 #Importation of the models
-from from_scratch_approach.models_tested import resnet_AE, lstm_resnet_AE, lstm_conv_AE, conv_AE, linear_encoder, linear_decoder
+from models_tested import resnet_AE, lstm_resnet_AE, lstm_conv_AE, conv_AE, linear_encoder, linear_decoder
 
 #Use of wandb for visualization
 import wandb
