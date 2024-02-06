@@ -16,7 +16,7 @@ This code uses very well known libraries like torch, numpy and matplotlib. We al
 
 ## How to use ?
 
-the model_tested file contains only the 6 auto-encoders used for the various tests in the study. The training file handles all the data management, from creation to processing, as well as training the networks and saving the weights. The test file is the link with wandb.
+the model_tested file contains only the 6 auto-encoders used for the various tests in the study. Data_processing manages the creation of the HDF5 data file that will be used for training. The training file handles the data treatment as well as the training of the networks and the saving of the weights.
 
 ## Support
 

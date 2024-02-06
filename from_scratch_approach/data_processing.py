@@ -24,7 +24,7 @@ signal=2
 rawdata_dir=["PortiqueElasPlas_N_2000_index", "PortiqueElasPlas_E_2000_index"]
 store_dir="input_data"
 latentCdim=2
-nX2,pas_de_t=500, 6 #eviter plus sinon perte d'info
+nX2,pas_de_t=500, 6
 Xsize2=Xsize//pas_de_t
 reste=Xsize%pas_de_t
 
@@ -43,8 +43,6 @@ def CreateData():
         
         
         for s in range(signal):
-            # iBeg = s*max_step*Xsize
-            # iEnd = iBeg+step*Xsize-1
             for c in th_channels:
                 a=df_th.loc[:nX2*Xsize-1, "ACC{:>d}".format(c)].to_numpy().astype(np.float32).reshape(nX2,Xsize)
                 if reste==0 :
