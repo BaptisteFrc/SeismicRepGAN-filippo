@@ -1,4 +1,4 @@
-# Recherche autour des modèles diffusifs et génératifs. Pour surveiller et protéger les bâtiments historiques contre les risques naturels.
+# Research into diffusive and generative models. To monitor and protect historic buildings against natural hazards.
 
 ## Description of the project
 
