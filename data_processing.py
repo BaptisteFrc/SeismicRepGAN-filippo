@@ -63,9 +63,6 @@ def CreateData():
 
     h5f = h5py.File(opj(store_dir,"Data2.h5"),'w')
     h5f.create_dataset('X', data=X)
-    # h5f.create_dataset('damage_class', data=damage_class)
-    # h5f.create_dataset('magnitude', data=magnitude)
-    # h5f.create_dataset('damage_index', data=damage_index)
     h5f.close()
 
     X = shuffle(X, random_state=0)
