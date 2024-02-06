@@ -113,7 +113,7 @@ def CreateData():
 
     return Xtrn, Xvld
 
-CreateData()
+# CreateData()
 
 def LoadData():
     # LoadData.__globals__.update(kwargs)
