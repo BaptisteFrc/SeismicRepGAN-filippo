@@ -41,15 +41,6 @@ def CreateData():
         # load time histories
         df_th = pd.concat([read_th_engine(fname) for fname in fid_list_th],axis=1)
         
-        # load the damage index
-        # df_di = pd.read_csv(opj(rawdata_dir[i], "damage_index.csv"), header=None,
-        #                     names=["DI"], dtype={"DI": np.float64},)
-        # damage_index = df_di.to_numpy()[:nX]
-        
-        # max_nX = df_di.shape[0]
-        # assert max_nX>nX
-        # step = nX//signal
-        # max_step = max_nX//signal
         
         for s in range(signal):
             # iBeg = s*max_step*Xsize
@@ -69,30 +60,6 @@ def CreateData():
     X = np.pad(X,((0,0),(0,0),(0,nxtpow2(X.shape[-1])-X.shape[-1])))
     X = np.swapaxes(X,1,2)
 
-    # n = []
-    # fid_th = open(opj(store_dir,"magnitude.csv"))
-    # th = csv.reader(fid_th)
-    # for row in th:
-    #     n.append(row)
-
-    # m = np.array(n,dtype=np.float32)
-    # magnitude = np.zeros((nX,1),dtype=np.float32)
-    # for i in range(int(nX/N/signal)):
-    #     magnitude[i+int(nX/signal)] = m[i]
-    #     magnitude[i+int(nX/signal)+int(nX/signal/N)] = m[i]
-
-    # damage_class = np.zeros((nX,latentCdim),dtype=np.float32)
-   
-    # for i in range(latentCdim):
-    #     damage_class[nX//latentCdim*i:nX//latentCdim*(i+1),i] = 1.0
-
-    # for i in range(latentCdim):
-    #     h5f = h5py.File(opj(store_dir,"Damaged_{:>d}.h5".format(i)),'w')
-    #     h5f.create_dataset('X{:>d}'.format(i), data=X[nX//latentCdim*i:nX//latentCdim*(i+1),:,:])
-    #     h5f.create_dataset('c{:>d}'.format(i), data=damage_class[nX//latentCdim*i:nX//latentCdim*(i+1),:])
-    #     h5f.create_dataset('magnitude{:>d}'.format(i), data=magnitude[nX//latentCdim*i:nX//latentCdim*(i+1),:])
-    #     h5f.create_dataset('d{:>d}'.format(i), data=damage_index[nX//latentCdim*i:nX//latentCdim*(i+1)])
-    #     h5f.close()
 
     h5f = h5py.File(opj(store_dir,"Data2.h5"),'w')
     h5f.create_dataset('X', data=X)
@@ -105,11 +72,7 @@ def CreateData():
 
     # Split between train and validation set (time series and parameters are splitted in the same way)
     Xtrn, Xvld = train_test_split(X, random_state=0, test_size=0.1)
-    
-    # return (
-    #     tf.data.Dataset.from_tensor_slices((Xtrn,(Ctrn,Mtrn,Dtrn))).batch(batchSize),
-    #     tf.data.Dataset.from_tensor_slices((Xvld,(Cvld,Mvld,Dvld))).batch(batchSize)
-    #     )
+
 
     return Xtrn, Xvld
 
