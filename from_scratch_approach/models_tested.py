@@ -363,4 +363,3 @@ class lstm_decoder(torch.nn.Module):
         x,ras = self.lstm5(x)
         x = np.swapaxes(x,i,j)
         return x
-

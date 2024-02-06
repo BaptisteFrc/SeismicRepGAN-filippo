@@ -153,7 +153,6 @@ def train(config=None) :
         train_loss=0
         for time_s in loader:
           time_s=time_s.to(device)
-          # Reshaping the image to (-1, 784)
           time_s_2 = time_s[:,0:161,:].to(device)
 
           # Output of Autoencoder
