@@ -16,7 +16,7 @@ This code uses very well known libraries like torch, numpy and matplotlib. We al
 
 ## How to use ?
 
-The only file that provides robustness indicators is user_interface.py. The folder "smoothing" manages the smoothing process of a function. The folder "models_neural_network" provides two neural networks that can be used to run tests in the interface section. The folder adversarial_attacks contains a hand-written fast gradiant attack that can be used to test the robustness of functions in the interface section as well.
+the model_tested file contains only the 6 auto-encoders used for the various tests in the study. The training file handles all the data management, from creation to processing, as well as training the networks and saving the weights. The test file is the link with wandb.
 
 ## Support
 
