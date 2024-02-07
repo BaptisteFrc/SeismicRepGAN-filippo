@@ -1089,6 +1089,6 @@ class RepGAN(tf.keras.Model):
         h=kl.Dense(512)(h)
         h=kl.LeakyReLU(alpha=0.1)(h)
         h=kl.Dropout(0.25)(h)
-        h=kl.Dense(256)(h)
+        h=kl.Dense(self.latentNdim)(h)
         PredN=tf.keras.Model(n,h,name="PredN")
         return PredN
