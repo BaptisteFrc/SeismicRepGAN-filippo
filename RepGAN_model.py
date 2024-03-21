@@ -157,7 +157,7 @@ class RepGAN(tf.keras.Model):
             with tf.GradientTape(persistent=True) as tape:
 
                 # Encode real signals X
-                [_, s_fake, c_fake, n_fake] = self.Fx(X, training=True)
+                _, _, _, _, s_fake, c_fake, n_fake = self.Fx(X, training=True)
 
                 # Discriminates real and fake S
                 Ds_real = self.Ds(s_prior, training=True)
@@ -203,7 +203,7 @@ class RepGAN(tf.keras.Model):
             with tf.GradientTape(persistent=True) as tape:
 
                 # Encode real signals
-                _, s_fake, c_fake, n_fake = self.Fx(X, training=True)
+                _, h_μs_skip1, h_c_skip1, h_n_skip1, s_fake, c_fake, n_fake = self.Fx(X, training=True)
 
                 # Discriminate fake latent space
                 Ds_fake = self.Ds(s_fake, training=True)
@@ -219,7 +219,7 @@ class RepGAN(tf.keras.Model):
                 AdvGlossXZX = AdvGlossC + AdvGlossS + AdvGlossN
 
                 # Reconstruct real signals
-                X_rec = self.Gz((s_fake, c_fake, n_fake), training=True)
+                X_rec = self.Gz((h_μs_skip1, h_c_skip1, h_n_skip1, s_fake, c_fake, n_fake), training=True)
 
                 # Compute reconstruction loss
                 FakeCloss = self.FakeCloss(c_prior, c_fake)
@@ -264,13 +264,13 @@ class RepGAN(tf.keras.Model):
         with tf.GradientTape(persistent=True) as tape:
 
             # Encode real signals X
-            [_, s, c, n] = self.Fx(X, training=True)
+            [_, h_μs_skip1, h_c_skip1, h_n_skip1, s, c, n] = self.Fx(X, training=True)
 
             # Predict N
             n_pred = self.PredN(n, training=True)
 
             # Reconstruct real signals
-            y_pred = self.Gz((s, c, n_pred), training=True)
+            y_pred = self.Gz((h_μs_skip1, h_c_skip1, h_n_skip1, s, c, n_pred), training=True)
 
             # Compute loss
             Predloss = self.Predloss(y, y_pred)
@@ -297,6 +297,7 @@ class RepGAN(tf.keras.Model):
 
     #@tf.function
     def train_ZXZ(self, X, c_prior):
+        print("train ZXZ")
 
         # Sample factorial prior S
         s_prior = self.ps.sample(self.batchSize)
@@ -311,7 +312,7 @@ class RepGAN(tf.keras.Model):
             with tf.GradientTape(persistent=True) as tape:
 
                 # Decode factorial prior
-                X_fake = self.Gz((s_prior, c_prior, n_prior), training=True)
+                X_fake = self.Gz((None, None, None, s_prior, c_prior, n_prior), training=True)
 
                 # Discriminate real and fake X
                 Dx_real = self.Dx(X, training=True)
@@ -349,7 +350,7 @@ class RepGAN(tf.keras.Model):
             with tf.GradientTape(persistent=True) as tape:
 
                 # Decode factorial prior
-                X_fake = self.Gz((s_prior, c_prior, n_prior), training=True)
+                X_fake = self.Gz((None, None, None, s_prior, c_prior, n_prior), training=True)
 
                 # Discriminate real and fake X
                 Dx_fake = self.Dx(X_fake, training=True)
@@ -429,13 +430,13 @@ class RepGAN(tf.keras.Model):
             #c, mag, di = c
      
         #X_rec, c_fake, s_fake, n_fake = self(X, training=False)
-        [_, s, c, n] = self.Fx(X, training=False)
+        [_, h_μs_skip1, h_c_skip1, h_n_skip1, s, c, n] = self.Fx(X, training=False)
 
         # Reconstruct real signals
-        X_rec = self.Gz((s, c, n), training=False)
+        X_rec = self.Gz((h_μs_skip1, h_c_skip1, h_n_skip1, s, c, n), training=False)
         # Compute predictions
         n_pred = self.PredN(n, training=False)
-        X_pred = self.Gz((s, c, n_pred), training=False)
+        X_pred = self.Gz((h_μs_skip1, h_c_skip1, h_n_skip1, s, c, n_pred), training=False)
 
         # Updates the metrics tracking the loss
         RecXloss=self.RecXloss(X, X_rec)
@@ -513,6 +514,7 @@ class RepGAN(tf.keras.Model):
 
         # Input layer
         X = kl.Input(shape=self.Xshape, name="X")
+        print(X.shape[1])
 
         # Initial CNN layer
         layer = -1
@@ -545,11 +547,12 @@ class RepGAN(tf.keras.Model):
         # variable s
         layer = 0
         # s-average
-        h_μs = kl.Conv1D(self.nZchannels*self.Sstride**(layer+1),
+        h_μs_skip1 = kl.Conv1D(self.nZchannels*self.Sstride**(layer+1),
                          self.Skernel, self.Sstride, padding="same",
-                         data_format="channels_last", name="FxCNNmuS{:>d}".format(layer+1))(z)
+                         data_format="channels_last", name="FxCNNmuS{:>d}".format(layer+1))(z) #Output size: (None, self.Xsize//(self.stride**(self.nAElayers) * self.Sstride), self.nZchannels*self.Sstride)
+        print("h_μs_skip1.shape: ",h_μs_skip1.shape)
         h_μs = kl.BatchNormalization(
-            momentum=0.95, name="FxBNmuS{:>d}".format(layer+1))(h_μs)
+            momentum=0.95, name="FxBNmuS{:>d}".format(layer+1))(h_μs_skip1)
         h_μs = kl.LeakyReLU(
             alpha=0.1, name="FxAmuS{:>d}".format(layer+1))(h_μs)
         h_μs = kl.Dropout(
@@ -567,20 +570,20 @@ class RepGAN(tf.keras.Model):
                 self.dpout, name="FxDOlvS{:>d}".format(layer+1))(h_logDiagΣs)
 
         # variable c
-        h_c = kl.Conv1D(self.nZchannels*self.Cstride**(layer+1),
+        h_c_skip1 = kl.Conv1D(self.nZchannels*self.Cstride**(layer+1),
                         self.Ckernel, self.Cstride, padding="same",
                         data_format="channels_last", name="FxCNNC{:>d}".format(layer+1))(z)
         h_c = kl.BatchNormalization(
-            momentum=0.95, name="FxBNC{:>d}".format(layer+1))(h_c)
+            momentum=0.95, name="FxBNC{:>d}".format(layer+1))(h_c_skip1)
         h_c = kl.LeakyReLU(alpha=0.1, name="FxAC{:>d}".format(layer+1))(h_c)
         # h_c = tfa.layers.InstanceNormalization()(h_c)
         h_c = kl.Dropout(self.dpout, name="FxDOC{:>d}".format(layer+1))(h_c)
 
         # variable n
-        h_n = kl.Conv1D(self.nZchannels*self.Nstride**(layer+1),
+        h_n_skip1 = kl.Conv1D(self.nZchannels*self.Nstride**(layer+1),
                         self.Nkernel, self.Nstride, padding="same",
                         data_format="channels_last", name="FxCNNN{:>d}".format(layer+1))(z)
-        h_n = kl.BatchNormalization(momentum=0.95)(h_n)
+        h_n = kl.BatchNormalization(momentum=0.95)(h_n_skip1)
         h_n = kl.LeakyReLU(alpha=0.1, name="FxAN{:>d}".format(layer+1))(h_n)
         # h_n = tfa.layers.InstanceNormalization()(h_n)
         h_n = kl.Dropout(self.dpout, name="FxDON{:>d}".format(layer+1))(h_n)
@@ -707,7 +710,7 @@ class RepGAN(tf.keras.Model):
         n = kl.BatchNormalization(name="bn_noise", momentum=0.95)(h_n)
         # n = tfa.layers.InstanceNormalization()(h_n)
 
-        Fx = tf.keras.Model(X, [hs, s, c, n], name="Fx")
+        Fx = tf.keras.Model(X, [hs, h_μs_skip1, h_c_skip1, h_n_skip1, s, c, n], name="Fx")
 
         return Fx
 
@@ -718,6 +721,9 @@ class RepGAN(tf.keras.Model):
 
         """
 
+        h_μs_skip1 = kl.Input(shape=(self.Xsize//(self.stride**(self.nAElayers) * self.Sstride), self.nZchannels*self.Sstride),name="h_μs_skip1")
+        h_c_skip1 = kl.Input(shape=(self.Xsize//(self.stride**(self.nAElayers) * self.Cstride), self.nZchannels*self.Cstride),name="h_c_skip1")
+        h_n_skip1= kl.Input(shape=(self.Xsize//(self.stride**(self.nAElayers) * self.Nstride), self.nZchannels*self.Nstride),name="h_n_skip1")
         s = kl.Input(shape=(self.latentSdim,), name="s")
         c = kl.Input(shape=(self.latentCdim,), name="c")
         n = kl.Input(shape=(self.latentNdim,), name="n")
@@ -761,6 +767,10 @@ class RepGAN(tf.keras.Model):
                 h_s = kl.LeakyReLU(alpha=0.1)(h_s)
                 h_s = kl.BatchNormalization(momentum=0.95)(h_s)
                 # h_s = kl.Dropout(self.dpout,name="GzDOS{:>d}".format(layer))(h_s)
+            
+            print("couche skip s: ",h_μs_skip1)
+            #h_s = kl.Add()([h_s, h_μs_skip1])
+            h_s = h_μs_skip1
             h_s = tfa.layers.SpectralNormalization(kl.Conv1DTranspose(int(self.nSchannels*self.Sstride**(-self.nSlayers)),
                                                                       self.Skernel, self.Sstride, padding="same",
                                                                       data_format="channels_last"))(h_s)
@@ -807,6 +817,9 @@ class RepGAN(tf.keras.Model):
                 h_c = kl.BatchNormalization(momentum=0.95)(h_c)
                 h_c = kl.LeakyReLU(alpha=0.1)(h_c)
                 # h_c = kl.Dropout(self.dpout)(h_c)
+
+            print("couche skip c: ",h_c_skip1)
+            h_c = kl.concatenate([h_c, h_c_skip1])
             h_c = tfa.layers.SpectralNormalization(kl.Conv1DTranspose(int(self.nCchannels*self.Cstride**(-self.nClayers)),
                                                                       self.Ckernel, self.Cstride, padding="same",
                                                                       data_format="channels_last"))(h_c)
@@ -853,6 +866,9 @@ class RepGAN(tf.keras.Model):
                 h_n = kl.LeakyReLU(alpha=0.1)(h_n)
                 h_n = kl.BatchNormalization(momentum=0.95)(h_n)
                 # h_n = kl.Dropout(self.dpout)(h_n)
+            
+            print("couche skip n: ",h_n_skip1)
+            h_n = kl.concatenate([h_n, h_n_skip1])
             h_n = tfa.layers.SpectralNormalization(kl.Conv1DTranspose(int(self.nNchannels*self.Nstride**(-self.nNlayers)),
                                                                       self.Nkernel, self.Nstride, padding="same",
                                                                       data_format="channels_last"))(h_n)
