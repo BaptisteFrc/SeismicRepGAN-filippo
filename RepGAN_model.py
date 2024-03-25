@@ -219,7 +219,7 @@ class RepGAN(tf.keras.Model):
                 AdvGlossXZX = AdvGlossC + AdvGlossS + AdvGlossN
 
                 # Reconstruct real signals
-                X_rec = self.Gz((s_skip, c_skip, n_skip, s_fake, c_fake, n_fake), training=True)
+                X_rec = self.Gz((s_fake, s_skip, c_fake, c_skip, n_fake, n_skip), training=True)
 
                 # Compute reconstruction loss
                 FakeCloss = self.FakeCloss(c_prior, c_fake)
@@ -270,7 +270,7 @@ class RepGAN(tf.keras.Model):
             n_pred = self.PredN(n, training=True)
 
             # Reconstruct real signals
-            y_pred = self.Gz((s_skip, c_skip, n_skip, s, c, n_pred), training=True)
+            y_pred = self.Gz((s, s_skip, c, c_skip, n_pred, n_skip), training=True)
 
             # Compute loss
             Predloss = self.Predloss(y, y_pred)
@@ -310,9 +310,24 @@ class RepGAN(tf.keras.Model):
 
             # Tape gradients
             with tf.GradientTape(persistent=True) as tape:
-
+                print("s_prior.shape : ",s_prior.shape)
+                print("c_prior.shape : ",c_prior.shape)
+                print("n_prior.shape : ",n_prior.shape)
                 # Decode factorial prior
-                X_fake = self.Gz((None, None, None, s_prior, c_prior, n_prior), training=True)
+                s_skip_zeros_shape = (self.Xsize // (self.stride**(self.nAElayers) * self.Sstride), self.nZchannels * self.Sstride)
+                c_skip_zeros_shape = (self.Xsize // (self.stride**(self.nAElayers) * self.Cstride), self.nZchannels * self.Cstride)
+                n_skip_zeros_shape = (self.Xsize // (self.stride**(self.nAElayers) * self.Nstride), self.nZchannels * self.Nstride)
+                s_skip_zeros = tf.zeros(s_skip_zeros_shape)
+                s_skip_zeros = tf.expand_dims(s_skip_zeros, axis=0)
+                c_skip_zeros = tf.zeros(c_skip_zeros_shape)
+                c_skip_zeros = tf.expand_dims(c_skip_zeros, axis=0)
+                n_skip_zeros = tf.zeros(n_skip_zeros_shape)
+                n_skip_zeros = tf.expand_dims(n_skip_zeros, axis=0)
+                print("s_skipe_zeros shape:",s_skip_zeros.shape)
+                print("c_skipe_zeros shape:",c_skip_zeros.shape)
+                print("n_skipe_zeros shape:",n_skip_zeros.shape)
+                X_fake = self.Gz((s_prior, s_skip_zeros, c_prior, c_skip_zeros, n_prior, n_skip_zeros), training=True)
+
 
                 # Discriminate real and fake X
                 Dx_real = self.Dx(X, training=True)
@@ -350,7 +365,16 @@ class RepGAN(tf.keras.Model):
             with tf.GradientTape(persistent=True) as tape:
 
                 # Decode factorial prior
-                X_fake = self.Gz((None, None, None, s_prior, c_prior, n_prior), training=True)
+                s_skip_zeros_shape = (self.Xsize // (self.stride**(self.nAElayers) * self.Sstride), self.nZchannels * self.Sstride)
+                c_skip_zeros_shape = (self.Xsize // (self.stride**(self.nAElayers) * self.Cstride), self.nZchannels * self.Cstride)
+                n_skip_zeros_shape = (self.Xsize // (self.stride**(self.nAElayers) * self.Nstride), self.nZchannels * self.Nstride)
+                s_skip_zeros = tf.zeros(s_skip_zeros_shape)
+                s_skip_zeros = tf.expand_dims(s_skip_zeros, axis=0)
+                c_skip_zeros = tf.zeros(c_skip_zeros_shape)
+                c_skip_zeros = tf.expand_dims(c_skip_zeros, axis=0)
+                n_skip_zeros = tf.zeros(n_skip_zeros_shape)
+                n_skip_zeros = tf.expand_dims(n_skip_zeros, axis=0)
+                X_fake = self.Gz((s_prior, s_skip_zeros, c_prior, c_skip_zeros, n_prior, n_skip_zeros), training=True)
 
                 # Discriminate real and fake X
                 Dx_fake = self.Dx(X_fake, training=True)
@@ -433,10 +457,10 @@ class RepGAN(tf.keras.Model):
         [_, s_skip, c_skip, n_skip, s, c, n] = self.Fx(X, training=False)
 
         # Reconstruct real signals
-        X_rec = self.Gz((s_skip, c_skip, n_skip, s, c, n), training=False)
+        X_rec = self.Gz((s, s_skip, c, c_skip, n, n_skip), training=False)
         # Compute predictions
         n_pred = self.PredN(n, training=False)
-        X_pred = self.Gz((s_skip, c_skip, n_skip, s, c, n_pred), training=False)
+        X_pred = self.Gz((s, s_skip, c, c_skip, n_pred, n_skip), training=False)
 
         # Updates the metrics tracking the loss
         RecXloss=self.RecXloss(X, X_rec)
@@ -460,13 +484,13 @@ class RepGAN(tf.keras.Model):
 
     def call(self, X):
         [_, s_skip, c_skip, n_skip, s_fake, c_fake, n_fake] = self.Fx(X)
-        h = kl.Conv1D(self.nZfirst, self.kernel, 1, padding="same",
-                      data_format="channels_last", name="FxCNN0")(X)
-        h = kl.Flatten()(h)
-        print("s_fake.shape : ",s_fake.shape)
-        print("c_fake.shape : ",c_fake.shape)
-        print("n_fake.shape : ",n_fake.shape)
-        X_rec = self.Gz((h, c_skip, n_skip, s_fake, c_fake, n_fake))
+        #h = kl.Conv1D(self.nZfirst, self.kernel, 1, padding="same",
+        #              data_format="channels_last", name="FxCNN0")(X)
+        #h = kl.Flatten()(h)
+        print("s_skip.shape : ",s_skip.shape)
+        print("c_skip.shape : ",c_skip.shape)
+        print("n_skip.shape : ",n_skip.shape)
+        X_rec = self.Gz((s_fake, s_skip, c_fake, c_skip, n_fake, n_skip))
         return X_rec, c_fake, s_fake, n_fake
 
     def plot(self, X, c):
