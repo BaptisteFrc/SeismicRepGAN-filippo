@@ -460,10 +460,13 @@ class RepGAN(tf.keras.Model):
 
     def call(self, X):
         [_, s_skip, c_skip, n_skip, s_fake, c_fake, n_fake] = self.Fx(X)
+        h = kl.Conv1D(self.nZfirst, self.kernel, 1, padding="same",
+                      data_format="channels_last", name="FxCNN0")(X)
+        h = kl.Flatten()(h)
         print("s_fake.shape : ",s_fake.shape)
         print("c_fake.shape : ",c_fake.shape)
         print("n_fake.shape : ",n_fake.shape)
-        X_rec = self.Gz((s_skip, c_skip, n_skip, s_fake, c_fake, n_fake))
+        X_rec = self.Gz((h, c_skip, n_skip, s_fake, c_fake, n_fake))
         return X_rec, c_fake, s_fake, n_fake
 
     def plot(self, X, c):
@@ -783,6 +786,7 @@ class RepGAN(tf.keras.Model):
             GzS = tf.keras.Model([s,s_skip], h_s)
 
         # variable c
+        print("c.shape 2",c.shape)
         h_c = tfa.layers.SpectralNormalization(
             kl.Dense(self.Csize*self.nCchannels))(c)
         h_c = kl.BatchNormalization(momentum=0.95)(h_c)
@@ -812,10 +816,12 @@ class RepGAN(tf.keras.Model):
             GzC = keras.Model(c, h_c)
 
         else:
+            print(self.nClayers)
             for layer in range(1, self.nClayers):
                 h_c = tfa.layers.SpectralNormalization(kl.Conv1DTranspose(int(self.nCchannels*self.Cstride**(-layer)),
                                                                           self.Ckernel, self.Cstride, padding="same",
                                                                           data_format="channels_last"))(h_c)
+                print("nom de la couche qui clc1: ", h_c)                                                          
                 h_c = kl.BatchNormalization(momentum=0.95)(h_c)
                 h_c = kl.LeakyReLU(alpha=0.1)(h_c)
                 # h_c = kl.Dropout(self.dpout)(h_c)
@@ -824,6 +830,7 @@ class RepGAN(tf.keras.Model):
             h_c = tfa.layers.SpectralNormalization(kl.Conv1DTranspose(int(self.nCchannels*self.Cstride**(-self.nClayers)),
                                                                       self.Ckernel, self.Cstride, padding="same",
                                                                       data_format="channels_last"))(h_c)
+            print("nom de la couche qui clc2: ", h_c)                                                             
             h_c = kl.BatchNormalization(momentum=0.95)(h_c)
             h_c = kl.LeakyReLU(alpha=0.1)(h_c)
             # h_c = kl.Dropout(self.dpout)(h_c)
@@ -831,8 +838,10 @@ class RepGAN(tf.keras.Model):
 
         # variable n
         #h_n = n
+        print("n shape 2",n.shape)
         h_n = tfa.layers.SpectralNormalization(
             kl.Dense(self.Nsize*self.nNchannels))(n)
+        print("nom de la couche qui clc3: ", h_n) 
         h_n = kl.BatchNormalization(momentum=0.95)(h_n)
         h_n = kl.LeakyReLU(alpha=0.1)(h_n)
         h_n = kl.Reshape((self.Nsize, self.nNchannels))(h_n)
