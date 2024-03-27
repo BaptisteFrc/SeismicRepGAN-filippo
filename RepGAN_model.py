@@ -314,15 +314,20 @@ class RepGAN(tf.keras.Model):
                 print("c_prior.shape : ",c_prior.shape)
                 print("n_prior.shape : ",n_prior.shape)
                 # Decode factorial prior
-                s_skip_zeros_shape = (self.Xsize // (self.stride**(self.nAElayers) * self.Sstride), self.nZchannels * self.Sstride)
-                c_skip_zeros_shape = (self.Xsize // (self.stride**(self.nAElayers) * self.Cstride), self.nZchannels * self.Cstride)
-                n_skip_zeros_shape = (self.Xsize // (self.stride**(self.nAElayers) * self.Nstride), self.nZchannels * self.Nstride)
+                first_dim_size = tf.shape(s_prior)[0]
+
+                s_skip_zeros_shape = (first_dim_size, self.Xsize // (self.stride**(self.nAElayers) * self.Sstride), self.nZchannels * self.Sstride)
+                c_skip_zeros_shape = (first_dim_size, self.Xsize // (self.stride**(self.nAElayers) * self.Cstride), self.nZchannels * self.Cstride)
+                n_skip_zeros_shape = (first_dim_size, self.Xsize // (self.stride**(self.nAElayers) * self.Nstride), self.nZchannels * self.Nstride)
                 s_skip_zeros = tf.zeros(s_skip_zeros_shape)
-                s_skip_zeros = tf.expand_dims(s_skip_zeros, axis=0)
+                #s_skip_zeros = s_skip_zeros[None,:]
+                #s_skip_zeros = tf.expand_dims(s_skip_zeros, axis=0)
                 c_skip_zeros = tf.zeros(c_skip_zeros_shape)
-                c_skip_zeros = tf.expand_dims(c_skip_zeros, axis=0)
+                #c_skip_zeros = c_skip_zeros[None,:]
+                #c_skip_zeros = tf.expand_dims(c_skip_zeros, axis=0)
                 n_skip_zeros = tf.zeros(n_skip_zeros_shape)
-                n_skip_zeros = tf.expand_dims(n_skip_zeros, axis=0)
+                #n_skip_zeros = n_skip_zeros[None,:]
+                #n_skip_zeros = tf.expand_dims(n_skip_zeros, axis=0)
                 print("s_skipe_zeros shape:",s_skip_zeros.shape)
                 print("c_skipe_zeros shape:",c_skip_zeros.shape)
                 print("n_skipe_zeros shape:",n_skip_zeros.shape)
@@ -365,15 +370,17 @@ class RepGAN(tf.keras.Model):
             with tf.GradientTape(persistent=True) as tape:
 
                 # Decode factorial prior
-                s_skip_zeros_shape = (self.Xsize // (self.stride**(self.nAElayers) * self.Sstride), self.nZchannels * self.Sstride)
-                c_skip_zeros_shape = (self.Xsize // (self.stride**(self.nAElayers) * self.Cstride), self.nZchannels * self.Cstride)
-                n_skip_zeros_shape = (self.Xsize // (self.stride**(self.nAElayers) * self.Nstride), self.nZchannels * self.Nstride)
+                first_dim_size = tf.shape(s_prior)[0]
+
+                s_skip_zeros_shape = (first_dim_size, self.Xsize // (self.stride**(self.nAElayers) * self.Sstride), self.nZchannels * self.Sstride)
+                c_skip_zeros_shape = (first_dim_size, self.Xsize // (self.stride**(self.nAElayers) * self.Cstride), self.nZchannels * self.Cstride)
+                n_skip_zeros_shape = (first_dim_size, self.Xsize // (self.stride**(self.nAElayers) * self.Nstride), self.nZchannels * self.Nstride)
                 s_skip_zeros = tf.zeros(s_skip_zeros_shape)
-                s_skip_zeros = tf.expand_dims(s_skip_zeros, axis=0)
+                #s_skip_zeros = tf.expand_dims(s_skip_zeros, axis=0)
                 c_skip_zeros = tf.zeros(c_skip_zeros_shape)
-                c_skip_zeros = tf.expand_dims(c_skip_zeros, axis=0)
+                #c_skip_zeros = tf.expand_dims(c_skip_zeros, axis=0)
                 n_skip_zeros = tf.zeros(n_skip_zeros_shape)
-                n_skip_zeros = tf.expand_dims(n_skip_zeros, axis=0)
+                #n_skip_zeros = tf.expand_dims(n_skip_zeros, axis=0)
                 X_fake = self.Gz((s_prior, s_skip_zeros, c_prior, c_skip_zeros, n_prior, n_skip_zeros), training=True)
 
                 # Discriminate real and fake X
@@ -383,7 +390,7 @@ class RepGAN(tf.keras.Model):
                 AdvGlossX = self.AdvGlossX(None, Dx_fake)
 
                 # Encode fake signals
-                [hs, s_rec, c_rec, _] = self.Fx(X_fake, training=True)
+                [hs, _, _, _, s_rec, c_rec, _] = self.Fx(X_fake, training=True)
                 # # Q_cont_distribution = tfp.distributions.MultivariateNormalDiag(loc=μs_rec, scale_diag=logΣs_rec)
                 # RecSloss = -tf.reduce_mean(Q_cont_distribution.log_prob(s_rec))
                 RecSloss = self.RecSloss(s_prior, hs)
