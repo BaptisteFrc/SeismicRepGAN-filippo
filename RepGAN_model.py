@@ -21,7 +21,7 @@ import tensorflow.keras.constraints as kc
 tfd = tfp.distributions
 
 loss_names = [
-    "Predloss",
+    #"Predloss",
     "AdvDlossX",
     "AdvDlossC",
     "AdvDlossS",
@@ -124,10 +124,10 @@ class RepGAN(tf.keras.Model):
         """
         self.Fx = self.BuildFx()
         self.Gz = self.BuildGz()
-        self.PredN = self.BuildPredN()
+        #self.PredN = self.BuildPredN()
 
         self.models = [self.Dx, self.Dc, self.Ds, self.Dn,
-                       self.Fx, self.Gz, self.PredN]
+                       self.Fx, self.Gz]
 
     def compile(self, optimizers, losses, **kwargs):
 
@@ -316,14 +316,8 @@ class RepGAN(tf.keras.Model):
                 c_skip_zeros_shape = (first_dim_size, self.Xsize // (self.stride**(self.nAElayers) * self.Cstride), self.nZchannels * self.Cstride)
                 n_skip_zeros_shape = (first_dim_size, self.Xsize // (self.stride**(self.nAElayers) * self.Nstride), self.nZchannels * self.Nstride)
                 s_skip_zeros = tf.zeros(s_skip_zeros_shape)
-                #s_skip_zeros = s_skip_zeros[None,:]
-                #s_skip_zeros = tf.expand_dims(s_skip_zeros, axis=0)
                 c_skip_zeros = tf.zeros(c_skip_zeros_shape)
-                #c_skip_zeros = c_skip_zeros[None,:]
-                #c_skip_zeros = tf.expand_dims(c_skip_zeros, axis=0)
                 n_skip_zeros = tf.zeros(n_skip_zeros_shape)
-                #n_skip_zeros = n_skip_zeros[None,:]
-                #n_skip_zeros = tf.expand_dims(n_skip_zeros, axis=0)
                 X_fake = self.Gz((s_prior, s_skip_zeros, c_prior, c_skip_zeros, n_prior, n_skip_zeros), training=True)
 
 
@@ -426,14 +420,14 @@ class RepGAN(tf.keras.Model):
             ZXZout = self.train_ZXZ(X, damage_class)
         for _ in range(self.nXRepX):
             XZXout = self.train_XZX(X, damage_class)
-        for _ in range(2):
-            Predout = self.train_pred(X,y)
+        #for _ in range(2):
+        #    Predout = self.train_pred(X,y)
 
         (Dx_fake, Dx_real) = ZXZout
 
         (Dc_fake, Ds_fake, Dn_fake, Dc_real, Ds_real, Dn_real) = XZXout
 
-        (y_pred, c, s, n) = Predout
+        #(y_pred, c, s, n) = Predout
 
         # Compute our own metrics
         for k, v in self.loss_trackers.items():
