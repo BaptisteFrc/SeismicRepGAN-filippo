@@ -453,14 +453,14 @@ class RepGAN(tf.keras.Model):
         # Reconstruct real signals
         X_rec = self.Gz((s, s_skip, c, c_skip, n, n_skip), training=False)
         # Compute predictions
-        n_pred = self.PredN(n, training=False)
-        X_pred = self.Gz((s, s_skip, c, c_skip, n_pred, n_skip), training=False)
+        #n_pred = self.PredN(n, training=False)
+        X_pred = self.Gz((s, s_skip, c, c_skip, n, n_skip), training=False)
 
         # Updates the metrics tracking the loss
         RecXloss=self.RecXloss(X, X_rec)
-        Predloss=self.Predloss(y, X_pred)
+        #Predloss=self.Predloss(y, X_pred)
         self.loss_trackers["RecXloss_tracker"].update_state(RecXloss)
-        self.loss_trackers["Predloss_tracker"].update_state(Predloss)
+        #self.loss_trackers["Predloss_tracker"].update_state(Predloss)
 
         # for k, v in self.loss_trackers.items():
         #     v.update_state(self.loss_val[k.strip("_tracker")])
@@ -472,8 +472,8 @@ class RepGAN(tf.keras.Model):
         #self.RecXloss_tracker.update_state(X, X_rec)
         # Return a dict mapping metric names to current value.
         # Note that it will include the loss (tracked in self.metrics).
-        return {"RecXloss": self.loss_trackers["RecXloss_tracker"].result(),
-                "Predloss": self.loss_trackers["Predloss_tracker"].result(),}
+        return {"RecXloss": self.loss_trackers["RecXloss_tracker"].result(),}
+                #"Predloss": self.loss_trackers["Predloss_tracker"].result(),}
         #return {"RecXloss": RecXloss_tracker.result()}
 
     def call(self, X):
