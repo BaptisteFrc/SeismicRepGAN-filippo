@@ -590,8 +590,8 @@ class RepGAN(tf.keras.Model):
         # variable n
         h_n = kl.Conv1D(self.nZchannels*self.Nstride**(layer+1),
                         self.Nkernel, self.Nstride, padding="same",
-                        data_format="channels_last", name="FxCNNN{:>d}".format(layer+1))(h_n)
-        h_n = kl.BatchNormalization(momentum=0.95)(n_skip)
+                        data_format="channels_last", name="FxCNNN{:>d}".format(layer+1))(z)
+        h_n = kl.BatchNormalization(momentum=0.95)(h_n)
         h_n = kl.LeakyReLU(alpha=0.1, name="FxAN{:>d}".format(layer+1))(h_n)
         # h_n = tfa.layers.InstanceNormalization()(h_n)
         h_n = kl.Dropout(self.dpout, name="FxDON{:>d}".format(layer+1))(h_n)
