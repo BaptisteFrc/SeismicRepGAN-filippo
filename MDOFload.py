@@ -171,3 +171,53 @@ def Load_Un_Damaged(i,**kwargs):
         tf.data.Dataset.from_tensor_slices((Xtrn,Ctrn,Mtrn,Dtrn)).batch(batchSize),
         tf.data.Dataset.from_tensor_slices((Xvld,Cvld,Mvld,Dvld)).batch(batchSize)
         )
+
+if __name__=="__main__":
+    from RepGAN_utils import *
+    options = ParseOptions()
+    train,val = LoadData(**options)
+
+    # Compter le nombre d'exemples dans train
+    num_examples_train = train.cardinality().numpy()
+    print("Nombre total d'exemples dans train :", num_examples_train)
+    num_examples_val = val.cardinality().numpy()
+    print("Nombre total d'exemples dans val :", num_examples_val)
+
+    for x, c, m, d, y in train:
+        print("x:", x.shape)
+        break
+
+    realX = np.concatenate([x for x, c, m, d, y in train], axis=0)
+    realC = np.concatenate([c for x, c, m, d, y in train], axis=0)
+    mag = np.concatenate([m for x, c, m, d, y in train], axis=0)
+    di = np.concatenate([d for x, c, m, d, y in train], axis=0)
+    y = np.concatenate([y for x, c, m, d, y in train], axis=0)
+
+    print("realX:",realX.shape)    
+    print("realC:",realC.shape)
+    print("mag:",mag.shape)
+    print("di:",di.shape)
+    print("y:",y.shape)    
+
+
+    C_array = np.array(realC)
+
+    # Compter le nombre d'occurrences de [1. 0.] et [0. 1.]
+    nb_occurrences_10 = np.sum(np.all(C_array == [1, 0], axis=1))
+    nb_occurrences_01 = np.sum(np.all(C_array == [0, 1], axis=1))
+
+    print("Nombre d'occurrences de [1. 0.]:", nb_occurrences_10)
+    print("Nombre d'occurrences de [0. 1.]:", nb_occurrences_01)
+
+    print("C: ", realC )
+
+    #print("train.take:",train.take(1))
+    #for i, example in enumerate(train.take(2)):  # Prendre un seul exemple
+    #    print("Contenu du tenseur", i+1, "dans train:")
+    #    for var_name, tensor in zip(train.element_spec, example):
+    #        print(var_name)
+    #        print(tensor.numpy())
+    #        print()
+
+    print("train:", train)
+    print("val:", val)
