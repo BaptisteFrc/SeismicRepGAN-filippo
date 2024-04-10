@@ -1535,6 +1535,55 @@ def PlotDistributions(model,realXC,results_dir):
     return
 
 
+def PlotTSNE(model,realXC,results_dir):
+    # Plot reconstructed time-histories
+    realX = np.concatenate([x for x, c, m, d, y in realXC], axis=0)
+    realC = np.concatenate([c for x, c, m, d, y in realXC], axis=0)
+    mag = np.concatenate([m for x, c, m, d, y in realXC], axis=0)
+    di = np.concatenate([d for x, c, m, d, y in realXC], axis=0)
+    y = np.concatenate([y for x, c, m, d, y in realXC], axis=0)
+
+    recX,fakeC,fakeS,fakeN,fakeX = model.plot(realX,realC)
+
+    #projection of n on a 3D space
+    tsne = TSNE(n_components=3) 
+    N_embedded = tsne.fit_transform(fakeN)
+
+    real_labels = realC[:, 0]
+    fake_labels = tf.round(fakeC)[:, 0]
+
+    #plot of projected n with label corresponding to real C
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111, projection='3d')
+
+    ax1.scatter(N_embedded[:, 0], N_embedded[:, 1], N_embedded[:, 2], c=real_labels)
+    ax1.set_title('projected n: real C')
+    ax1.set_xlabel('x')
+    ax1.set_ylabel('y')
+    ax1.set_zlabel('z')
+
+    legend_points = [ax1.scatter([], [], [], c='purple', label='Class 0'), ax1.scatter([], [], [], c='yellow', label='Class 1')]
+    plt.legend(handles=legend_points, labels=['Class 0', 'Class 1'])
+
+    fig.savefig(results_dir + '/t-SNE_realC',bbox_inches = 'tight')
+
+    #plot of projected n with label corresponding to fake C
+    fig = plt.figure()
+    ax2 = fig.add_subplot(111, projection='3d')
+
+    ax2.scatter(N_embedded[:, 0], N_embedded[:, 1], N_embedded[:, 2], c=fake_labels)
+    ax2.set_title('projected n: predicted C')
+    ax2.set_xlabel('x')
+    ax2.set_ylabel('y')
+    ax2.set_zlabel('z')
+
+    legend_points = [ax2.scatter([], [], [], c='purple', label='Class 0'), ax1.scatter([], [], [], c='yellow', label='Class 1')]
+    plt.legend(handles=legend_points, labels=['Class 0', 'Class 1'])
+
+    fig.savefig(results_dir + '/t-SNE_fakeC',bbox_inches = 'tight')
+
+
+
 options = ParseOptions()
 
 # MODEL LOADING
@@ -1577,9 +1626,12 @@ if options['CreateData']:
     Xtrn,  Xvld, _ = mdof.CreateData(**options)
 else:
     # Load the dataset
+    print("loading datas")
     Xtrn, Xvld  = mdof.LoadData(**options)
 
-PlotReconstructedTHs(GiorgiaGAN,Xvld,options['results_dir']) # Plot reconstructed time-histories
+PlotTSNE(GiorgiaGAN,Xvld,options['results_dir'])
+
+#PlotReconstructedTHs(GiorgiaGAN,Xvld,options['results_dir']) # Plot reconstructed time-histories
 
 # PlotTHSGoFs(GiorgiaGAN,Xvld,options['results_dir']) # Plot reconstructed time-histories
 
