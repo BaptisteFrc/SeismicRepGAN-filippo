@@ -92,9 +92,9 @@ class RepGAN(tf.keras.Model):
                                                           dtype=tf.float32),
                                              scale_diag=tf.ones(shape=(self.latentSdim,),
                                              dtype=tf.float32))
-        self.pn = tfd.MultivariateNormalDiag(loc=tf.zeros(shape=(self.latentNdim,),
+        self.pn = tfd.MultivariateNormalDiag(loc=tf.zeros(shape=(self.Xsize//(self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers),
                                                           dtype=tf.float32),
-                                             scale_diag=tf.ones(shape=(self.latentNdim,),
+                                             scale_diag=tf.ones(shape=(self.Xsize//(self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers),
                                              dtype=tf.float32))
         self.BuildModels()
 
@@ -644,8 +644,8 @@ class RepGAN(tf.keras.Model):
                 alpha=0.1, name="FxAN{:>d}".format(layer+1))(h_n)
             # h_n = tfa.layers.InstanceNormalization()(h_n)
             h_n = kl.Dropout(
-                self.dpout, name="FxDON{:>d}".format(layer+1))(h_n)
-
+                self.dpout, name="FxDON{:>d}".format(layer+1))(h_n) #Output size at last iteration of the loop: (None, self.Xsize//(self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers)
+        print("h_n calculated shape:",(None, self.Xsize//(self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers))
         # variable s
         # s-average
         h_μs = kl.Flatten(name="FxFLmuS{:>d}".format(layer+1))(h_μs)
@@ -701,11 +701,13 @@ class RepGAN(tf.keras.Model):
         # h_n = kl.LeakyReLU(alpha=0.1)(h_n)
         # h_n = kl.Dropout(0.2)(h_n)
 
-        h_n = kl.Flatten(name="FxFLN{:>d}".format(layer+1))(h_n)
-        h_n = kl.Dense(1024)(h_n)
-        h_n = kl.BatchNormalization(momentum=0.95)(h_n)
-        h_n = kl.LeakyReLU(alpha=0.1)(h_n)
-        h_n = kl.Dense(self.latentNdim, name="FxFWN")(h_n)
+        #h_n = kl.Flatten(name="FxFLN{:>d}".format(layer+1))(h_n)
+        #h_n = kl.Dense(1024)(h_n)
+        #h_n = kl.BatchNormalization(momentum=0.95)(h_n)
+        #h_n = kl.LeakyReLU(alpha=0.1)(h_n)
+        #h_n = kl.Dense(self.latentNdim, name="FxFWN")(h_n)
+
+        print("h_n.shape", h_n.shape)
 
         # variable s
         s = sampleS(hs, self.latentSdim)
@@ -732,7 +734,7 @@ class RepGAN(tf.keras.Model):
         h_skip = kl.Input(shape=(self.Xsize//(self.stride**(self.nAElayers)), self.nZchannels),name="h_skip")
         s = kl.Input(shape=(self.latentSdim,), name="s")
         c = kl.Input(shape=(self.latentCdim,), name="c")
-        n = kl.Input(shape=(self.latentNdim,), name="n")
+        n = kl.Input(shape=(self.Xsize//(self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers), name="n")
         #n = kl.Input(shape=(64,64,), name="n")
 
         layer = 0
@@ -830,12 +832,13 @@ class RepGAN(tf.keras.Model):
             GzC = tf.keras.Model(c, h_c)
 
         # variable n
-        #h_n = n
-        h_n = tfa.layers.SpectralNormalization(
-            kl.Dense(self.Nsize*self.nNchannels))(n)
-        h_n = kl.BatchNormalization(momentum=0.95)(h_n)
-        h_n = kl.LeakyReLU(alpha=0.1)(h_n)
-        h_n = kl.Reshape((self.Nsize, self.nNchannels))(h_n)
+        h_n = n
+        print("n.shape in Gz:", n.shape)
+        #h_n = tfa.layers.SpectralNormalization(
+        #    kl.Dense(self.Nsize*self.nNchannels))(n)
+        #h_n = kl.BatchNormalization(momentum=0.95)(h_n)
+        #h_n = kl.LeakyReLU(alpha=0.1)(h_n)
+        #h_n = kl.Reshape((self.Nsize, self.nNchannels))(h_n)
 
         if self.skip:
             for layer in range(1, self.nNlayers):
@@ -1044,7 +1047,7 @@ class RepGAN(tf.keras.Model):
         """
             Dense discriminator structure
         """
-        n = kl.Input(shape=(self.latentNdim,))
+        n = kl.Input(shape=(self.Xsize//(self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers))
         if self.DzSN:
             h = tfa.layers.SpectralNormalization(kl.Dense(3000))(n)
             h = kl.LeakyReLU(alpha=0.1)(h)
