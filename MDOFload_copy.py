@@ -180,3 +180,5 @@ if __name__ == "__main__":
     # Number of latent variables
     latentCdim = 2
     CreateData()
+
+# create, load avec décalage pour la prédicition.
