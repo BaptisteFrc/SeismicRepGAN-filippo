@@ -1701,9 +1701,9 @@ else:
     print("loading datas")
     Xtrn, Xvld  = mdof.LoadData(**options)
 
-PlotTSNE(GiorgiaGAN,Xvld,options['results_dir'])
+#PlotTSNE(GiorgiaGAN,Xvld,options['results_dir'])
 
-#PlotReconstructedTHs(GiorgiaGAN,Xvld,options['results_dir']) # Plot reconstructed time-histories
+PlotReconstructedTHs(GiorgiaGAN,Xvld,options['results_dir']) # Plot reconstructed time-histories
 
 # PlotTHSGoFs(GiorgiaGAN,Xvld,options['results_dir']) # Plot reconstructed time-histories
 
