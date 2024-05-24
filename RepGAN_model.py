@@ -157,7 +157,7 @@ class RepGAN(tf.keras.Model):
             with tf.GradientTape(persistent=True) as tape:
 
                 # Encode real signals X
-                _, _, s_fake, c_fake, n_fake = self.Fx(X, training=True)
+                _, s_fake, c_fake, n_fake = self.Fx(X, training=True)
 
                 # Discriminates real and fake S
                 Ds_real = self.Ds(s_prior, training=True)
@@ -362,7 +362,7 @@ class RepGAN(tf.keras.Model):
                 AdvGlossX = self.AdvGlossX(None, Dx_fake)
 
                 # Encode fake signals
-                [hs,_, s_rec, c_rec, _] = self.Fx(X_fake, training=True)
+                [hs, s_rec, c_rec, _] = self.Fx(X_fake, training=True)
                 # # Q_cont_distribution = tfp.distributions.MultivariateNormalDiag(loc=μs_rec, scale_diag=logΣs_rec)
                 # RecSloss = -tf.reduce_mean(Q_cont_distribution.log_prob(s_rec))
                 RecSloss = self.RecSloss(s_prior, hs)
