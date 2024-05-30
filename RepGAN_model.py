@@ -88,9 +88,9 @@ class RepGAN(tf.keras.Model):
         # define the constraint
         self.ClipD = ClipConstraint(0.01)
 
-        self.ps = tfd.MultivariateNormalDiag(loc=tf.zeros(shape=(self.Xsize//(self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers),
+        self.ps = tfd.MultivariateNormalDiag(loc=tf.zeros(shape=(self.Xsize//(2 * self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers),
                                                           dtype=tf.float32),
-                                             scale_diag=tf.ones(shape=(self.Xsize//(self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers),
+                                             scale_diag=tf.ones(shape=(self.Xsize//(2 * self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers),
                                              dtype=tf.float32))
         self.pn = tfd.MultivariateNormalDiag(loc=tf.zeros(shape=(self.Xsize//(self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers),
                                                           dtype=tf.float32),
@@ -483,6 +483,14 @@ class RepGAN(tf.keras.Model):
         X_rec = self.Gz((s_fake, c_fake, n_fake, h_skip), training=False)
         return X_rec, c_fake, s_fake, n_fake, fakeX
 
+    def plot_s_influence(self, X, c):
+        [_, h_skip, s_fake, c_fake, n_fake] = self.Fx(X, training=False)
+        s_prior = self.ps.sample(X.shape[0])
+        n_prior = self.pn.sample(X.shape[0])
+        fakeX = self.Gz((s_prior, c, n_prior, h_skip), training=False) #not used so just put the skip layers to have no errors
+        X_rec = self.Gz((s_fake, c_fake, n_fake, h_skip), training=False)
+        return X_rec, c_fake, s_fake, n_fake, fakeX
+
     def label_predictor(self, X, c):
         [_, s_fake, c_fake, n_fake] = self.Fx(X)
         s_prior = self.ps.sample(s_fake.shape[0])
@@ -556,6 +564,8 @@ class RepGAN(tf.keras.Model):
         # z ---> Zshape = (Zsize,nZchannels) = (256, 64)
 
         # variable s
+        layer = 0
+
         h_μs = kl.Conv1D(self.nZchannels*self.Nstride**(layer+1),
                         self.Nkernel, self.Nstride, padding="same",
                         data_format="channels_last", name="FxCNNS{:>d}".format(layer+1))(z)
@@ -620,6 +630,9 @@ class RepGAN(tf.keras.Model):
             h_n = kl.Dropout(
                 self.dpout, name="FxDON{:>d}".format(layer+1))(h_n) #Output size at last iteration of the loop: (None, self.Xsize//(self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers)
         print("h_n calculated shape:",(None, self.Xsize//(self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers))
+        print("self.Xsize:",self.Xsize)
+        print("self.stride**(self.nAElayers):",self.stride**(self.nAElayers))
+        print("self.Nstride**(self.nNlayers):",self.Nstride**(self.nNlayers))
         ## variable s
         ## s-average
         #h_μs = kl.Flatten(name="FxFLmuS{:>d}".format(layer+1))(h_μs)
@@ -686,8 +699,8 @@ class RepGAN(tf.keras.Model):
         # variable s
         print("h_μs.shape", h_μs.shape)
         s = h_μs
-        #s = sampleS(h_μs, self.latentSdim)
-        #print("s.shape", s.shape)
+        s = sampleS(h_μs, self.latentSdim)
+        print("s.shape", s.shape)
 
         # variable c
         # c = kl.Dense(self.latentCdim,activation=tf.keras.activations.softmax)(h_c)
@@ -710,7 +723,7 @@ class RepGAN(tf.keras.Model):
         """
 
         h_skip = kl.Input(shape=(self.Xsize//(self.stride**(self.nAElayers)), self.nZchannels),name="h_skip")
-        s = kl.Input(shape=(self.Xsize//(self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers), name="s")
+        s = kl.Input(shape=(self.Xsize//(2*self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers), name="s")
         c = kl.Input(shape=(self.latentCdim,), name="c")
         n = kl.Input(shape=(self.Xsize//(self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers), name="n")
         #n = kl.Input(shape=(64,64,), name="n")
@@ -751,7 +764,7 @@ class RepGAN(tf.keras.Model):
                 # h_s = kl.Dropout(self.dpout)(h_s)
             
             h_s = tfa.layers.SpectralNormalization(kl.Conv1DTranspose(int(self.nNchannels*self.Nstride**(-self.nNlayers)),
-                                                                      self.Nkernel, self.Nstride, padding="same",
+                                                                      self.Nkernel, 2*self.Nstride, padding="same",
                                                                       data_format="channels_last"))(h_s)
             h_s = kl.BatchNormalization(momentum=0.95)(h_s)
             h_s = kl.LeakyReLU(alpha=0.1)(h_s)
@@ -1048,7 +1061,7 @@ class RepGAN(tf.keras.Model):
         """
             Dense discriminator structure
         """
-        s = kl.Input(shape=(self.Xsize//(self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers), name="s")     
+        s = kl.Input(shape=(self.Xsize//(2 * self.stride**(self.nAElayers) * self.Nstride**(self.nNlayers)), self.nZchannels*self.Nstride**self.nNlayers), name="s")     
         if self.DzSN:
             h = tfa.layers.SpectralNormalization(kl.Dense(3000))(s)
             h = kl.LeakyReLU(alpha=0.1)(h)

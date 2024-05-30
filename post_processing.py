@@ -847,10 +847,10 @@ def PlotLatentSpace(model,realXC,results_dir):
 
 def PlotTSNE(model,realXC,results_dir):
     
-    realX = np.concatenate([x for x, c, m, d in realXC], axis=0)
-    realC = np.concatenate([c for x, c, m, d in realXC], axis=0)
-    mag = np.concatenate([m for x, c, m, d in realXC], axis=0)
-    di = np.concatenate([d for x, c, m, d in realXC], axis=0)
+    realX = np.concatenate([x for x, c, m, d, y in realXC], axis=0)
+    realC = np.concatenate([c for x, c, m, d, y in realXC], axis=0)
+    mag = np.concatenate([m for x, c, m, d, y in realXC], axis=0)
+    di = np.concatenate([d for x, c, m, d, y in realXC], axis=0)
 
     _,fakeC,fakeS,fakeN = model.predict(realX)
 
@@ -858,9 +858,15 @@ def PlotTSNE(model,realXC,results_dir):
     for i in range(realC.shape[0]):
         labels[i] = np.argmax(realC[i,:])
 
+    print("fakeN.shape:",fakeN.shape)
+    print("fakeC.shape:",fakeC.shape)
+    print("realX.shape:",realX.shape)
+    print("reshape X:", tf.reshape(realX,[tf.shape(realX)[0],-1]).shape)
     
+    fakeN = tf.reshape(fakeN,[tf.shape(fakeN)[0],-1])
+
     transformerN = TSNE(n_components=3, verbose=1, random_state=123)
-    n = transformerN.fit_transform(fakeN)
+    n = transformerN.fit_transform(tf.reshape(fakeN,[tf.shape(fakeN)[0],-1]))
 
     dfN = pd.DataFrame()
     dfN["C"] = labels
@@ -895,8 +901,8 @@ def PlotTSNE(model,realXC,results_dir):
             lab.append('1')
             i2 = i2+1
             if i2==1:
-                fakeN_high = fakeN[i,:].reshape((1,fakeN.shape[1]))
-                fakeS_high = fakeS[i,:].reshape((1,fakeS.shape[1]))
+                fakeN_high = tf.reshape(fakeN[i,:], [1,fakeN.shape[1]])
+                fakeS_high = tf.reshape(fakeS[i,:], [1,fakeS.shape[1]])
                 fakeC_high = labels[i].reshape((1,1))
                 mag_high = mag[i].reshape((1,1))
                 d_high = di[i].reshape((1,1))
@@ -970,7 +976,8 @@ def PlotTSNE(model,realXC,results_dir):
 
     cat = np.array(['Undamaged', 'Damaged'])
 
-    n_low = transformerN.fit_transform(fakeN_low)
+    #n_low = transformerN.fit_transform(fakeN_low)
+    n_low = transformerN.fit_transform(tf.reshape(fakeN_low,[tf.shape(fakeN_low)[0],-1]))
 
     dfN_low = pd.DataFrame()
     dfN_low["C"] = fakeC_low[:,0]
@@ -980,7 +987,8 @@ def PlotTSNE(model,realXC,results_dir):
     dfN_low["Dimension 2"] = n_low[:,1]
     dfN_low["Dimension 3"] = n_low[:,2]
 
-    n_high = transformerN.fit_transform(fakeN_high)
+    #n_high = transformerN.fit_transform(fakeN_high)
+    n_high = transformerN.fit_transform(tf.reshape(fakeN_high,[tf.shape(fakeN_high)[0],-1]))
 
     dfN_high = pd.DataFrame()
     dfN_high["C"] = fakeC_high[:,0]
@@ -1102,7 +1110,8 @@ def PlotTSNE(model,realXC,results_dir):
     
     transformerS = TSNE(n_components=3, verbose=1, random_state=123)
 
-    s = transformerS.fit_transform(fakeS)
+    s = transformerS.fit_transform(tf.reshape(fakeS,[tf.shape(fakeS)[0],-1]))
+    
 
     dfS = pd.DataFrame()
     dfS["C"] = labels
@@ -1130,7 +1139,8 @@ def PlotTSNE(model,realXC,results_dir):
     s1_y = np.array(s1_y,dtype=np.float32)
        
 
-    s_low = transformerS.fit_transform(fakeS_low)
+    s_low = transformerS.fit_transform(tf.reshape(fakeS_low,[tf.shape(fakeS_low)[0],-1]))
+    
 
     dfS_low = pd.DataFrame()
     dfS_low["C"] = fakeC_low[:,0]
@@ -1140,7 +1150,7 @@ def PlotTSNE(model,realXC,results_dir):
     dfS_low["Dimension 2"] = s_low[:,1]
     dfS_low["Dimension 3"] = s_low[:,2]
 
-    s_high = transformerS.fit_transform(fakeS_high)
+    s_high = transformerS.fit_transform(tf.reshape(fakeS_high,[tf.shape(fakeS_high)[0],-1]))
 
     dfS_high = pd.DataFrame()
     dfS_high["C"] = fakeC_high[:,0]
@@ -1408,6 +1418,7 @@ def PlotChangeS(model,realXC,results_dir):
 
     transformerN1 = TSNE(n_components=2, verbose=1, random_state=123)
     n1 = transformerN1.fit_transform(realN)
+    tf.reshape(fakeN,[tf.shape(fakeN)[0],-1])
 
     dfN1 = pd.DataFrame()
     dfN1["C"] = labels_real
@@ -1416,6 +1427,7 @@ def PlotChangeS(model,realXC,results_dir):
 
     transformerN2 = TSNE(n_components=2, verbose=1, random_state=123)
     n2 = transformerN2.fit_transform(recN)
+    tf.reshape(fakeN,[tf.shape(fakeN)[0],-1])
 
     dfN2 = pd.DataFrame()
     dfN2["C"] = labels_rec
@@ -1433,6 +1445,7 @@ def PlotChangeS(model,realXC,results_dir):
     
     transformerS1 = TSNE(n_components=2, verbose=1, random_state=123)
     s1 = transformerS1.fit_transform(realS)
+    tf.reshape(fakeN,[tf.shape(fakeN)[0],-1])
 
     dfS1 = pd.DataFrame()
     dfS1["C"] = labels_real
@@ -1441,6 +1454,7 @@ def PlotChangeS(model,realXC,results_dir):
 
     transformerS2 = TSNE(n_components=2, verbose=1, random_state=123)
     s2 = transformerS2.fit_transform(recS)
+    tf.reshape(fakeN,[tf.shape(fakeN)[0],-1])
 
     dfS2 = pd.DataFrame()
     dfS2["C"] = labels_rec
@@ -1535,124 +1549,124 @@ def PlotDistributions(model,realXC,results_dir):
     return
 
 
-def PlotTSNE(model,realXC,results_dir):
-    # Plot reconstructed time-histories
-    realX = np.concatenate([x for x, c, m, d, y in realXC], axis=0)
-    realC = np.concatenate([c for x, c, m, d, y in realXC], axis=0)
-    mag = np.concatenate([m for x, c, m, d, y in realXC], axis=0)
-    di = np.concatenate([d for x, c, m, d, y in realXC], axis=0)
-    y = np.concatenate([y for x, c, m, d, y in realXC], axis=0)
-
-    recX,fakeC,fakeS,fakeN,fakeX = model.plot(realX,realC)
-
-    print("realX[:,:,0].shape",realX[:,:,0].shape)
-    print("fakeN.shape",fakeN.shape)
-    print("realC.shape",realC.shape)
-
-    #projection of n on a 2D space
-    tsne2D = TSNE(n_components=2, perplexity=5, n_iter=5000) 
-    X_embedded2D = tsne2D.fit_transform(tf.reshape(realX,[tf.shape(realX)[0],-1]))
-    #X_embedded2D = tsne.fit_transform(realX[:,:,0])
-    N_embedded2D = tsne2D.fit_transform(fakeN)
-
-    real_labels = realC[:, 0]
-    fake_labels = tf.round(fakeC)[:, 0]
-
-    #plot of projected X with label corresponding to real C
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-
-    ax1.scatter(X_embedded2D[:, 0], X_embedded2D[:, 1], c=real_labels)
-    ax1.set_title('projected X: real C')
-    ax1.set_xlabel('x')
-    ax1.set_ylabel('y')
-
-    legend_points = [ax1.scatter([], [], [], c='purple', label='Class 0'), ax1.scatter([], [], [], c='yellow', label='Class 1')]
-    plt.legend(handles=legend_points, labels=['Class 0', 'Class 1'])
-
-    fig.savefig(results_dir + '/t-SNE_realX_2D',bbox_inches = 'tight')
-
-    #plot of projected n with label corresponding to real C
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
-
-    ax1.scatter(N_embedded2D[:, 0], N_embedded2D[:, 1], c=real_labels)
-    ax1.set_title('projected n: real C')
-    ax1.set_xlabel('x')
-    ax1.set_ylabel('y')
-
-    legend_points = [ax1.scatter([], [], [], c='purple', label='Class 0'), ax1.scatter([], [], [], c='yellow', label='Class 1')]
-    plt.legend(handles=legend_points, labels=['Class 0', 'Class 1'])
-
-    fig.savefig(results_dir + '/t-SNE_realC_2D',bbox_inches = 'tight')
-
-    #plot of projected n with label corresponding to fake C
-    fig = plt.figure()
-    ax2 = fig.add_subplot(111)
-
-    ax2.scatter(N_embedded2D[:, 0], N_embedded2D[:, 1], c=fake_labels)
-    ax2.set_title('projected n: predicted C')
-    ax2.set_xlabel('x')
-    ax2.set_ylabel('y')
-
-    legend_points = [ax2.scatter([], [], [], c='purple', label='Class 0'), ax1.scatter([], [], [], c='yellow', label='Class 1')]
-    plt.legend(handles=legend_points, labels=['Class 0', 'Class 1'])
-
-    fig.savefig(results_dir + '/t-SNE_fakeC_2D',bbox_inches = 'tight')
-
-    #projection of n on a 3D space
-    tsne3D = TSNE(n_components=3, perplexity=5, n_iter=5000) 
-    X_embedded3D = tsne3D.fit_transform(tf.reshape(realX,[tf.shape(realX)[0],-1]))
-    #X_embedded = tsne.fit_transform(realX[:,:,0])
-    N_embedded3D = tsne3D.fit_transform(fakeN)
-
-    real_labels = realC[:, 0]
-    fake_labels = tf.round(fakeC)[:, 0]
-
-    #plot of projected X with label corresponding to real C
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111, projection='3d')
-
-    ax1.scatter(X_embedded3D[:, 0], X_embedded3D[:, 1], X_embedded3D[:, 2], c=real_labels)
-    ax1.set_title('projected X: real C')
-    ax1.set_xlabel('x')
-    ax1.set_ylabel('y')
-    ax1.set_zlabel('z')
-
-    legend_points = [ax1.scatter([], [], [], c='purple', label='Class 0'), ax1.scatter([], [], [], c='yellow', label='Class 1')]
-    plt.legend(handles=legend_points, labels=['Class 0', 'Class 1'])
-
-    fig.savefig(results_dir + '/t-SNE_realX_3D',bbox_inches = 'tight')
-
-    #plot of projected n with label corresponding to real C
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111, projection='3d')
-
-    ax1.scatter(N_embedded3D[:, 0], N_embedded3D[:, 1], N_embedded3D[:, 2], c=real_labels)
-    ax1.set_title('projected n: real C')
-    ax1.set_xlabel('x')
-    ax1.set_ylabel('y')
-    ax1.set_zlabel('z')
-
-    legend_points = [ax1.scatter([], [], [], c='purple', label='Class 0'), ax1.scatter([], [], [], c='yellow', label='Class 1')]
-    plt.legend(handles=legend_points, labels=['Class 0', 'Class 1'])
-
-    fig.savefig(results_dir + '/t-SNE_realC_3D',bbox_inches = 'tight')
-
-    #plot of projected n with label corresponding to fake C
-    fig = plt.figure()
-    ax2 = fig.add_subplot(111, projection='3d')
-
-    ax2.scatter(N_embedded3D[:, 0], N_embedded3D[:, 1], N_embedded3D[:, 2], c=fake_labels)
-    ax2.set_title('projected n: predicted C')
-    ax2.set_xlabel('x')
-    ax2.set_ylabel('y')
-    ax2.set_zlabel('z')
-
-    legend_points = [ax2.scatter([], [], [], c='purple', label='Class 0'), ax1.scatter([], [], [], c='yellow', label='Class 1')]
-    plt.legend(handles=legend_points, labels=['Class 0', 'Class 1'])
-
-    fig.savefig(results_dir + '/t-SNE_fakeC_3D',bbox_inches = 'tight')
+#def PlotTSNE(model,realXC,results_dir):
+#    # Plot reconstructed time-histories
+#    realX = np.concatenate([x for x, c, m, d, y in realXC], axis=0)
+#    realC = np.concatenate([c for x, c, m, d, y in realXC], axis=0)
+#    mag = np.concatenate([m for x, c, m, d, y in realXC], axis=0)
+#    di = np.concatenate([d for x, c, m, d, y in realXC], axis=0)
+#    y = np.concatenate([y for x, c, m, d, y in realXC], axis=0)
+#
+#    recX,fakeC,fakeS,fakeN,fakeX = model.plot(realX,realC)
+#
+#    print("realX[:,:,0].shape",realX[:,:,0].shape)
+#    print("fakeN.shape",fakeN.shape)
+#    print("realC.shape",realC.shape)
+#
+#    #projection of n on a 2D space
+#    tsne2D = TSNE(n_components=2, perplexity=5, n_iter=5000) 
+#    X_embedded2D = tsne2D.fit_transform(tf.reshape(realX,[tf.shape(realX)[0],-1]))
+#    #X_embedded2D = tsne.fit_transform(realX[:,:,0])
+#    N_embedded2D = tsne2D.fit_transform(fakeN)
+#
+#    real_labels = realC[:, 0]
+#    fake_labels = tf.round(fakeC)[:, 0]
+#
+#    #plot of projected X with label corresponding to real C
+#    fig = plt.figure()
+#    ax1 = fig.add_subplot(111)
+#
+#    ax1.scatter(X_embedded2D[:, 0], X_embedded2D[:, 1], c=real_labels)
+#    ax1.set_title('projected X: real C')
+#    ax1.set_xlabel('x')
+#    ax1.set_ylabel('y')
+#
+#    legend_points = [ax1.scatter([], [], [], c='purple', label='Class 0'), ax1.scatter([], [], [], c='yellow', label='Class 1')]
+#    plt.legend(handles=legend_points, labels=['Class 0', 'Class 1'])
+#
+#    fig.savefig(results_dir + '/t-SNE_realX_2D',bbox_inches = 'tight')
+#
+#    #plot of projected n with label corresponding to real C
+#    fig = plt.figure()
+#    ax1 = fig.add_subplot(111)
+#
+#    ax1.scatter(N_embedded2D[:, 0], N_embedded2D[:, 1], c=real_labels)
+#    ax1.set_title('projected n: real C')
+#    ax1.set_xlabel('x')
+#    ax1.set_ylabel('y')
+#
+#    legend_points = [ax1.scatter([], [], [], c='purple', label='Class 0'), ax1.scatter([], [], [], c='yellow', label='Class 1')]
+#    plt.legend(handles=legend_points, labels=['Class 0', 'Class 1'])
+#
+#    fig.savefig(results_dir + '/t-SNE_realC_2D',bbox_inches = 'tight')
+#
+#    #plot of projected n with label corresponding to fake C
+#    fig = plt.figure()
+#    ax2 = fig.add_subplot(111)
+#
+#    ax2.scatter(N_embedded2D[:, 0], N_embedded2D[:, 1], c=fake_labels)
+#    ax2.set_title('projected n: predicted C')
+#    ax2.set_xlabel('x')
+#    ax2.set_ylabel('y')
+#
+#    legend_points = [ax2.scatter([], [], [], c='purple', label='Class 0'), ax1.scatter([], [], [], c='yellow', label='Class 1')]
+#    plt.legend(handles=legend_points, labels=['Class 0', 'Class 1'])
+#
+#    fig.savefig(results_dir + '/t-SNE_fakeC_2D',bbox_inches = 'tight')
+#
+#    #projection of n on a 3D space
+#    tsne3D = TSNE(n_components=3, perplexity=5, n_iter=5000) 
+#    X_embedded3D = tsne3D.fit_transform(tf.reshape(realX,[tf.shape(realX)[0],-1]))
+#    #X_embedded = tsne.fit_transform(realX[:,:,0])
+#    N_embedded3D = tsne3D.fit_transform(fakeN)
+#
+#    real_labels = realC[:, 0]
+#    fake_labels = tf.round(fakeC)[:, 0]
+#
+#    #plot of projected X with label corresponding to real C
+#    fig = plt.figure()
+#    ax1 = fig.add_subplot(111, projection='3d')
+#
+#    ax1.scatter(X_embedded3D[:, 0], X_embedded3D[:, 1], X_embedded3D[:, 2], c=real_labels)
+#    ax1.set_title('projected X: real C')
+#    ax1.set_xlabel('x')
+#    ax1.set_ylabel('y')
+#    ax1.set_zlabel('z')
+#
+#    legend_points = [ax1.scatter([], [], [], c='purple', label='Class 0'), ax1.scatter([], [], [], c='yellow', label='Class 1')]
+#    plt.legend(handles=legend_points, labels=['Class 0', 'Class 1'])
+#
+#    fig.savefig(results_dir + '/t-SNE_realX_3D',bbox_inches = 'tight')
+#
+#    #plot of projected n with label corresponding to real C
+#    fig = plt.figure()
+#    ax1 = fig.add_subplot(111, projection='3d')
+#
+#    ax1.scatter(N_embedded3D[:, 0], N_embedded3D[:, 1], N_embedded3D[:, 2], c=real_labels)
+#    ax1.set_title('projected n: real C')
+#    ax1.set_xlabel('x')
+#    ax1.set_ylabel('y')
+#    ax1.set_zlabel('z')
+#
+#    legend_points = [ax1.scatter([], [], [], c='purple', label='Class 0'), ax1.scatter([], [], [], c='yellow', label='Class 1')]
+#    plt.legend(handles=legend_points, labels=['Class 0', 'Class 1'])
+#
+#    fig.savefig(results_dir + '/t-SNE_realC_3D',bbox_inches = 'tight')
+#
+#    #plot of projected n with label corresponding to fake C
+#    fig = plt.figure()
+#    ax2 = fig.add_subplot(111, projection='3d')
+#
+#    ax2.scatter(N_embedded3D[:, 0], N_embedded3D[:, 1], N_embedded3D[:, 2], c=fake_labels)
+#    ax2.set_title('projected n: predicted C')
+#    ax2.set_xlabel('x')
+#    ax2.set_ylabel('y')
+#    ax2.set_zlabel('z')
+#
+#    legend_points = [ax2.scatter([], [], [], c='purple', label='Class 0'), ax1.scatter([], [], [], c='yellow', label='Class 1')]
+#    plt.legend(handles=legend_points, labels=['Class 0', 'Class 1'])
+#
+#    fig.savefig(results_dir + '/t-SNE_fakeC_3D',bbox_inches = 'tight')
 
 
 
@@ -1701,9 +1715,9 @@ else:
     print("loading datas")
     Xtrn, Xvld  = mdof.LoadData(**options)
 
-#PlotTSNE(GiorgiaGAN,Xvld,options['results_dir'])
+PlotTSNE(GiorgiaGAN,Xvld,options['results_dir'])
 
-PlotReconstructedTHs(GiorgiaGAN,Xvld,options['results_dir']) # Plot reconstructed time-histories
+#PlotReconstructedTHs(GiorgiaGAN,Xvld,options['results_dir']) # Plot reconstructed time-histories
 
 # PlotTHSGoFs(GiorgiaGAN,Xvld,options['results_dir']) # Plot reconstructed time-histories
 
