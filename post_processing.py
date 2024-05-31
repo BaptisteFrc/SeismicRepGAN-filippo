@@ -255,7 +255,103 @@ def PlotReconstructedTHs(model,realXC,results_dir):
             #plt.savefig(results_dir + '/fft_{:>d}_{:>d}.eps'.format(j,i),bbox_inches = 'tight',dpi=200)
             plt.close()
 
+def PlotAnalysis(model,realXC,results_dir):
+    # Plot reconstructed time-histories
+    realX = np.concatenate([x for x, c, m, d, y in realXC], axis=0)
+    realC = np.concatenate([c for x, c, m, d, y in realXC], axis=0)
+    mag = np.concatenate([m for x, c, m, d, y in realXC], axis=0)
+    di = np.concatenate([d for x, c, m, d, y in realXC], axis=0)
+    y = np.concatenate([y for x, c, m, d, y in realXC], axis=0)
 
+    list_X0_rec_n_zero, list_X0_rec_n, list_X1_rec_n_zero, list_X1_rec_n = model.plotAnalysis(realX,realC)
+
+    values = [-1, -0.5, 0, 0.5, 1]
+    s_fakes = [[values[i], values[j]] for i in range(5) for j in range(5)]
+
+    t = np.zeros(realX.shape[1])
+    for k in range(realX.shape[1]-1):
+        t[k+1] = (k+1)*0.04
+
+    #s influence for class 0 and noise 0
+    for i, recX in enumerate(list_X0_rec_n_zero):
+        print("recX.shape:",recX.shape)
+        hfg = plt.figure(figsize=(12,6),tight_layout=True)
+        hax = hfg.add_subplot(111)
+        hax.plot(t,realX[0,:,0], color='black')
+        hax.plot(t,recX[0,:,0], color='orange',linestyle="--")
+        #compute mse
+        mse = np.square(np.subtract(realX[0,:,0], recX[0,:,0])).mean()
+        zero = np.zeros_like(realX[0,:,0])
+        mse0 = np.square(np.subtract(realX[0,:,0], zero)).mean()
+        hax.set_title(str(mse)+" "+str(mse0), fontsize=22,fontweight='bold')
+        #hax.set_title(r'$X \hspace{0.5} reconstruction$', fontsize=22,fontweight='bold')
+        hax.set_ylabel(r'$X(t) \hspace{0.5} [1]$', fontsize=26,fontweight='bold')
+        hax.set_xlabel(r'$t \hspace{0.5} [s]$', fontsize=26,fontweight='bold')
+        hax.legend([r'$X$', r"$G_z(F_x(x))$"], loc='best',frameon=False,fontsize=20)
+        hax.set_ylim([-1.0, 1.0])
+        hax.tick_params(axis='both', labelsize=18)
+        plt.savefig(results_dir + f'/C0_n0/class0_n0_s={s_fakes[i]}.png',bbox_inches = 'tight')
+        plt.close()
+
+    #s influence for class 0 and noise non 0
+    for i, recX in enumerate(list_X0_rec_n):
+        hfg = plt.figure(figsize=(12,6),tight_layout=True)
+        hax = hfg.add_subplot(111)
+        hax.plot(t,realX[0,:,0], color='black')
+        hax.plot(t,recX[0,:,0], color='orange',linestyle="--")
+        #compute mse
+        mse = np.square(np.subtract(realX[0,:,0], recX[0,:,0])).mean()
+        zero = np.zeros_like(realX[0,:,0])
+        mse0 = np.square(np.subtract(realX[0,:,0], zero)).mean()
+        hax.set_title(str(mse)+" "+str(mse0), fontsize=22,fontweight='bold')
+        #hax.set_title(r'$X \hspace{0.5} reconstruction$', fontsize=22,fontweight='bold')
+        hax.set_ylabel(r'$X(t) \hspace{0.5} [1]$', fontsize=26,fontweight='bold')
+        hax.set_xlabel(r'$t \hspace{0.5} [s]$', fontsize=26,fontweight='bold')
+        hax.legend([r'$X$', r"$G_z(F_x(x))$"], loc='best',frameon=False,fontsize=20)
+        hax.set_ylim([-1.0, 1.0])
+        hax.tick_params(axis='both', labelsize=18)
+        plt.savefig(results_dir + f'/C0_n1/class0_n_s={s_fakes[i]}.png',bbox_inches = 'tight')
+        plt.close()
+
+    #s influence for class 1 and noise 0
+    for i, recX in enumerate(list_X1_rec_n_zero):
+        hfg = plt.figure(figsize=(12,6),tight_layout=True)
+        hax = hfg.add_subplot(111)
+        hax.plot(t,realX[0,:,0], color='black')
+        hax.plot(t,recX[0,:,0], color='orange',linestyle="--")
+        #compute mse
+        mse = np.square(np.subtract(realX[0,:,0], recX[0,:,0])).mean()
+        zero = np.zeros_like(realX[0,:,0])
+        mse0 = np.square(np.subtract(realX[0,:,0], zero)).mean()
+        hax.set_title(str(mse)+" "+str(mse0), fontsize=22,fontweight='bold')
+        #hax.set_title(r'$X \hspace{0.5} reconstruction$', fontsize=22,fontweight='bold')
+        hax.set_ylabel(r'$X(t) \hspace{0.5} [1]$', fontsize=26,fontweight='bold')
+        hax.set_xlabel(r'$t \hspace{0.5} [s]$', fontsize=26,fontweight='bold')
+        hax.legend([r'$X$', r"$G_z(F_x(x))$"], loc='best',frameon=False,fontsize=20)
+        hax.set_ylim([-1.0, 1.0])
+        hax.tick_params(axis='both', labelsize=18)
+        plt.savefig(results_dir + f'/C1_n0/class1_n0_s={s_fakes[i]}.png',bbox_inches = 'tight')
+        plt.close()
+
+    #s influence for class 1 and noise non 0
+    for i, recX in enumerate(list_X1_rec_n):
+        hfg = plt.figure(figsize=(12,6),tight_layout=True)
+        hax = hfg.add_subplot(111)
+        hax.plot(t,realX[0,:,0], color='black')
+        hax.plot(t,recX[0,:,0], color='orange',linestyle="--")
+        #compute mse
+        mse = np.square(np.subtract(realX[0,:,0], recX[0,:,0])).mean()
+        zero = np.zeros_like(realX[0,:,0])
+        mse0 = np.square(np.subtract(realX[0,:,0], zero)).mean()
+        hax.set_title(str(mse)+" "+str(mse0), fontsize=22,fontweight='bold')
+        #hax.set_title(r'$X \hspace{0.5} reconstruction$', fontsize=22,fontweight='bold')
+        hax.set_ylabel(r'$X(t) \hspace{0.5} [1]$', fontsize=26,fontweight='bold')
+        hax.set_xlabel(r'$t \hspace{0.5} [s]$', fontsize=26,fontweight='bold')
+        hax.legend([r'$X$', r"$G_z(F_x(x))$"], loc='best',frameon=False,fontsize=20)
+        hax.set_ylim([-1.0, 1.0])
+        hax.tick_params(axis='both', labelsize=18)
+        plt.savefig(results_dir + f'/C1_n1/class1_n_s={s_fakes[i]}.png',bbox_inches = 'tight')
+        plt.close()
 
 def cross_2d_dam(und,dam,i0,dt,nw,kspec,fmin,fmax,tmin,tmax):
     
@@ -858,6 +954,7 @@ def PlotTSNE(model,realXC,results_dir):
     for i in range(realC.shape[0]):
         labels[i] = np.argmax(realC[i,:])
 
+    print("fakeS.shape:",fakeS.shape)
     
     transformerN = TSNE(n_components=3, verbose=1, random_state=123)
     n = transformerN.fit_transform(fakeN)
@@ -1535,7 +1632,7 @@ def PlotDistributions(model,realXC,results_dir):
     return
 
 
-def PlotTSNE(model,realXC,results_dir):
+#def PlotTSNE(model,realXC,results_dir):
     # Plot reconstructed time-histories
     realX = np.concatenate([x for x, c, m, d, y in realXC], axis=0)
     realC = np.concatenate([c for x, c, m, d, y in realXC], axis=0)
@@ -1701,7 +1798,9 @@ else:
     print("loading datas")
     Xtrn, Xvld  = mdof.LoadData(**options)
 
-PlotTSNE(GiorgiaGAN,Xvld,options['results_dir'])
+PlotAnalysis(GiorgiaGAN,Xvld,options['results_dir'])
+
+#PlotTSNE(GiorgiaGAN,Xvld,options['results_dir'])
 
 #PlotReconstructedTHs(GiorgiaGAN,Xvld,options['results_dir']) # Plot reconstructed time-histories
 

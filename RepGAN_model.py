@@ -17,6 +17,7 @@ from tensorflow import keras
 import tensorflow.keras.layers as kl
 import tensorflow.keras.metrics as km
 import tensorflow.keras.constraints as kc
+import numpy as np
 
 tfd = tfp.distributions
 
@@ -68,6 +69,8 @@ class sampleSlayer(kl.Layer):
 
 def sampleS(hs, latentSdim):
     μs, logΣs = tf.split(hs, num_or_size_splits=2, axis=1)
+    print("μs:",μs[0])
+    print("logΣs:",logΣs[0])
     ε = tf.random.normal(shape=tf.shape(μs), mean=0.0, stddev=1.0)
     return μs + tf.math.exp(0.5*logΣs)*ε
 
@@ -481,6 +484,45 @@ class RepGAN(tf.keras.Model):
         X_rec = self.Gz((s_fake, c_fake, n_fake, h_skip), training=False)
         return X_rec, c_fake, s_fake, n_fake, fakeX
 
+    def plotAnalysis(self, X, c):
+        [hs_fake, h_skip, s_fake, c_fake, n_fake] = self.Fx(X, training=False)
+        #print("hs.shape:",hs_fake[0])
+        #print("s_fake_analyse.shape:", s_fake[0])
+        #s_test = sampleS(hs_fake[0], self.latentSdim)
+        #list_X_rec = []
+        #for _ in range(10):
+        #    s_prior = self.ps.sample(X.shape[0])
+        #    n_prior = self.pn.sample(X.shape[0])
+        X_rec = self.Gz((s_fake, c_fake, n_fake, h_skip), training=False)
+            #list_X_rec.append(X_rec)
+        return X_rec, c_fake, s_fake, n_fake, fakeX    
+
+    def plotAnalysis(self, X, c):
+        # Génération des sorties avec le modèle Fx
+        [hs_fake, h_skip, s_fake, c_fake, n_fake] = self.Fx(X, training=False)
+        values = [-1, -0.5, 0, 0.5, 1]
+        s_fakes = [tf.expand_dims(tf.convert_to_tensor([values[i], values[j]], dtype=tf.float32), axis=0) for i in range(5) for j in range(5)]
+
+        # Sélection du premier élément de classe 0 de chaque vecteur
+        c0 = c[1:2]
+        n_fake_c0 = n_fake[1:2]
+        h_skip_c0 = h_skip[1:2]
+
+        # Sélection du premier élément de classe 0 de chaque vecteur
+        c1 = c[0:1]
+        n_fake_c1 = n_fake[0:1]
+        h_skip_c1 = h_skip[0:1]
+
+        n_zeros = tf.zeros_like(n_fake_c0)
+
+        list_X0_rec_n_zero = [self.Gz((s_fake_i, c0, n_zeros, h_skip_c0), training=False) for s_fake_i in s_fakes]
+        list_X0_rec_n = [self.Gz((s_fake_i, c0, n_fake_c0, h_skip_c0), training=False) for s_fake_i in s_fakes]
+
+        list_X1_rec_n_zero = [self.Gz((s_fake_i, c1, n_zeros, h_skip_c1), training=False) for s_fake_i in s_fakes]
+        list_X1_rec_n = [self.Gz((s_fake_i, c1, n_fake_c0, h_skip_c1), training=False) for s_fake_i in s_fakes]
+
+        return list_X0_rec_n_zero, list_X0_rec_n, list_X1_rec_n_zero, list_X1_rec_n 
+
     def label_predictor(self, X, c):
         [_, s_fake, c_fake, n_fake] = self.Fx(X)
         s_prior = self.ps.sample(s_fake.shape[0])
@@ -708,7 +750,9 @@ class RepGAN(tf.keras.Model):
         h_n = kl.Dense(self.latentNdim, name="FxFWN")(h_n)
 
         # variable s
+        print("hs.shape:", hs.shape)
         s = sampleS(hs, self.latentSdim)
+        print("s.shape:", s.shape)
 
         # variable c
         # c = kl.Dense(self.latentCdim,activation=tf.keras.activations.softmax)(h_c)
