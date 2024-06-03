@@ -274,10 +274,9 @@ def PlotAnalysis(model,realXC,results_dir):
 
     #s influence for class 0 and noise 0
     for i, recX in enumerate(list_X0_rec_n_zero):
-        print("recX.shape:",recX.shape)
+        i0,i1 = i%5, i//5
         hfg = plt.figure(figsize=(12,6),tight_layout=True)
         hax = hfg.add_subplot(111)
-        hax.plot(t,realX[0,:,0], color='black')
         hax.plot(t,recX[0,:,0], color='orange',linestyle="--")
         #compute mse
         mse = np.square(np.subtract(realX[0,:,0], recX[0,:,0])).mean()
@@ -290,14 +289,31 @@ def PlotAnalysis(model,realXC,results_dir):
         hax.legend([r'$X$', r"$G_z(F_x(x))$"], loc='best',frameon=False,fontsize=20)
         hax.set_ylim([-1.0, 1.0])
         hax.tick_params(axis='both', labelsize=18)
-        plt.savefig(results_dir + f'/C0_n0/class0_n0_s={s_fakes[i]}.png',bbox_inches = 'tight')
+        plt.savefig(results_dir + f'/C0_n0/s1={values[i1]}/class0_n0_s0={values[i0]}_s1={values[i1]}.png',bbox_inches = 'tight')
+        plt.savefig(results_dir + f'/C0_n0/s0={values[i0]}/class0_n0_s0={values[i0]}_s1={values[i1]}.png',bbox_inches = 'tight')
+        plt.close()
+
+        recX_fft = tf.make_ndarray(tf.make_tensor_proto(recX))
+        hfg = plt.figure(figsize=(12,6),tight_layout=True)
+        hax = hfg.add_subplot(111)
+        N = realX.shape[1]
+        SAMPLE_RATE = 25
+        yf_rec = rfft(recX_fft[0,:,0])
+        xf_rec = rfftfreq(N, 1 / SAMPLE_RATE)
+        hax.plot(xf_rec, np.abs(yf_rec), color='orange',linestyle="--")
+        hax.set_ylabel(r'$Amplitude \hspace{0.5} [1]$', fontsize=26,fontweight='bold')
+        hax.set_xlabel(r'$Frequency \hspace{0.5} [Hz]$', fontsize=26,fontweight='bold')
+        hax.legend([r'$X$', r"$G_z(F_x(x))$"], loc='best',frameon=False,fontsize=20)
+        hax.tick_params(axis='both', labelsize=18)
+        plt.savefig(results_dir + f'/C0_n0/s1={values[i1]}/fft_class0_n0_s0={values[i0]}_s1={values[i1]}.png',bbox_inches = 'tight')
+        plt.savefig(results_dir + f'/C0_n0/s0={values[i0]}/fft_class0_n0_s0={values[i0]}_s1={values[i1]}.png',bbox_inches = 'tight')
         plt.close()
 
     #s influence for class 0 and noise non 0
     for i, recX in enumerate(list_X0_rec_n):
+        i0,i1 = i%5, i//5
         hfg = plt.figure(figsize=(12,6),tight_layout=True)
         hax = hfg.add_subplot(111)
-        hax.plot(t,realX[0,:,0], color='black')
         hax.plot(t,recX[0,:,0], color='orange',linestyle="--")
         #compute mse
         mse = np.square(np.subtract(realX[0,:,0], recX[0,:,0])).mean()
@@ -310,14 +326,31 @@ def PlotAnalysis(model,realXC,results_dir):
         hax.legend([r'$X$', r"$G_z(F_x(x))$"], loc='best',frameon=False,fontsize=20)
         hax.set_ylim([-1.0, 1.0])
         hax.tick_params(axis='both', labelsize=18)
-        plt.savefig(results_dir + f'/C0_n1/class0_n_s={s_fakes[i]}.png',bbox_inches = 'tight')
+        plt.savefig(results_dir + f'/C0_n1/s1={values[i1]}/class0_n1_s0={values[i0]}_s1={values[i1]}.png',bbox_inches = 'tight')
+        plt.savefig(results_dir + f'/C0_n1/s0={values[i0]}/class0_n1_s0={values[i0]}_s1={values[i1]}.png',bbox_inches = 'tight')
+        plt.close()
+
+        recX_fft = tf.make_ndarray(tf.make_tensor_proto(recX))
+        hfg = plt.figure(figsize=(12,6),tight_layout=True)
+        hax = hfg.add_subplot(111)
+        N = realX.shape[1]
+        SAMPLE_RATE = 25
+        yf_rec = rfft(recX_fft[0,:,0])
+        xf_rec = rfftfreq(N, 1 / SAMPLE_RATE)
+        hax.plot(xf_rec, np.abs(yf_rec), color='orange',linestyle="--")
+        hax.set_ylabel(r'$Amplitude \hspace{0.5} [1]$', fontsize=26,fontweight='bold')
+        hax.set_xlabel(r'$Frequency \hspace{0.5} [Hz]$', fontsize=26,fontweight='bold')
+        hax.legend([r'$X$', r"$G_z(F_x(x))$"], loc='best',frameon=False,fontsize=20)
+        hax.tick_params(axis='both', labelsize=18)
+        plt.savefig(results_dir + f'/C0_n1/s1={values[i1]}/fft_class0_n1_s0={values[i0]}_s1={values[i1]}.png',bbox_inches = 'tight')
+        plt.savefig(results_dir + f'/C0_n1/s0={values[i0]}/fft_class0_n1_s0={values[i0]}_s1={values[i1]}.png',bbox_inches = 'tight')
         plt.close()
 
     #s influence for class 1 and noise 0
     for i, recX in enumerate(list_X1_rec_n_zero):
+        i0,i1 = i%5, i//5
         hfg = plt.figure(figsize=(12,6),tight_layout=True)
         hax = hfg.add_subplot(111)
-        hax.plot(t,realX[0,:,0], color='black')
         hax.plot(t,recX[0,:,0], color='orange',linestyle="--")
         #compute mse
         mse = np.square(np.subtract(realX[0,:,0], recX[0,:,0])).mean()
@@ -330,14 +363,31 @@ def PlotAnalysis(model,realXC,results_dir):
         hax.legend([r'$X$', r"$G_z(F_x(x))$"], loc='best',frameon=False,fontsize=20)
         hax.set_ylim([-1.0, 1.0])
         hax.tick_params(axis='both', labelsize=18)
-        plt.savefig(results_dir + f'/C1_n0/class1_n0_s={s_fakes[i]}.png',bbox_inches = 'tight')
+        plt.savefig(results_dir + f'/C1_n0/s1={values[i1]}/class1_n0_s0={values[i0]}_s1={values[i1]}.png',bbox_inches = 'tight')
+        plt.savefig(results_dir + f'/C1_n0/s0={values[i0]}/class1_n0_s0={values[i0]}_s1={values[i1]}.png',bbox_inches = 'tight')
+        plt.close()
+
+        recX_fft = tf.make_ndarray(tf.make_tensor_proto(recX))
+        hfg = plt.figure(figsize=(12,6),tight_layout=True)
+        hax = hfg.add_subplot(111)
+        N = realX.shape[1]
+        SAMPLE_RATE = 25
+        yf_rec = rfft(recX_fft[0,:,0])
+        xf_rec = rfftfreq(N, 1 / SAMPLE_RATE)
+        hax.plot(xf_rec, np.abs(yf_rec), color='orange',linestyle="--")
+        hax.set_ylabel(r'$Amplitude \hspace{0.5} [1]$', fontsize=26,fontweight='bold')
+        hax.set_xlabel(r'$Frequency \hspace{0.5} [Hz]$', fontsize=26,fontweight='bold')
+        hax.legend([r'$X$', r"$G_z(F_x(x))$"], loc='best',frameon=False,fontsize=20)
+        hax.tick_params(axis='both', labelsize=18)
+        plt.savefig(results_dir + f'/C1_n0/s1={values[i1]}/fft_class1_n0_s0={values[i0]}_s1={values[i1]}.png',bbox_inches = 'tight')
+        plt.savefig(results_dir + f'/C1_n0/s0={values[i0]}/fft_class1_n0_s0={values[i0]}_s1={values[i1]}.png',bbox_inches = 'tight')
         plt.close()
 
     #s influence for class 1 and noise non 0
     for i, recX in enumerate(list_X1_rec_n):
+        i0,i1 = i%5, i//5
         hfg = plt.figure(figsize=(12,6),tight_layout=True)
         hax = hfg.add_subplot(111)
-        hax.plot(t,realX[0,:,0], color='black')
         hax.plot(t,recX[0,:,0], color='orange',linestyle="--")
         #compute mse
         mse = np.square(np.subtract(realX[0,:,0], recX[0,:,0])).mean()
@@ -350,9 +400,25 @@ def PlotAnalysis(model,realXC,results_dir):
         hax.legend([r'$X$', r"$G_z(F_x(x))$"], loc='best',frameon=False,fontsize=20)
         hax.set_ylim([-1.0, 1.0])
         hax.tick_params(axis='both', labelsize=18)
-        plt.savefig(results_dir + f'/C1_n1/class1_n_s={s_fakes[i]}.png',bbox_inches = 'tight')
+        plt.savefig(results_dir + f'/C1_n1/s1={values[i1]}/class1_n1_s0={values[i0]}_s1={values[i1]}.png',bbox_inches = 'tight')
+        plt.savefig(results_dir + f'/C1_n1/s0={values[i0]}/class1_n1_s0={values[i0]}_s1={values[i1]}.png',bbox_inches = 'tight')
         plt.close()
 
+        recX_fft = tf.make_ndarray(tf.make_tensor_proto(recX))
+        hfg = plt.figure(figsize=(12,6),tight_layout=True)
+        hax = hfg.add_subplot(111)
+        N = realX.shape[1]
+        SAMPLE_RATE = 25
+        yf_rec = rfft(recX_fft[0,:,0])
+        xf_rec = rfftfreq(N, 1 / SAMPLE_RATE)
+        hax.plot(xf_rec, np.abs(yf_rec), color='orange',linestyle="--")
+        hax.set_ylabel(r'$Amplitude \hspace{0.5} [1]$', fontsize=26,fontweight='bold')
+        hax.set_xlabel(r'$Frequency \hspace{0.5} [Hz]$', fontsize=26,fontweight='bold')
+        hax.legend([r'$X$', r"$G_z(F_x(x))$"], loc='best',frameon=False,fontsize=20)
+        hax.tick_params(axis='both', labelsize=18)
+        plt.savefig(results_dir + f'/C1_n1/s1={values[i1]}/fft_class1_n1_s0={values[i0]}_s1={values[i1]}.png',bbox_inches = 'tight')
+        plt.savefig(results_dir + f'/C1_n1/s0={values[i0]}/fft_class1_n1_s0={values[i0]}_s1={values[i1]}.png',bbox_inches = 'tight')
+        plt.close()
 def cross_2d_dam(und,dam,i0,dt,nw,kspec,fmin,fmax,tmin,tmax):
     
     fnyq = 0.5/dt

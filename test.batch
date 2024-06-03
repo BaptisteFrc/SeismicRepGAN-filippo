@@ -3,13 +3,13 @@
 #SBATCH --job-name=RepGAN
 #SBATCH --output out_2.out
 #SBATCH --error error_2.err
-#SBATCH --time=24:00:00
+#SBATCH --time=1:00:00
 
 ## For partition: either prod10, prod 20, prod 40 or prod80
 #SBATCH --partition=prod10
 
 ## For gres: either 1g.10gb:[1:10] for prod10, 2g.20gb:[1:4] for prod20, 3g.40gb:1 for >
-#SBATCH --gres=gpu:1g.10gb:4
+#SBATCH --gres=gpu:1g.10gb:1
 
 ## For ntasks and cpus: tsotal requested cpus (ntasks * cpus-per-task) must be in [1: 4 >
 #SBATCH --ntasks=1
