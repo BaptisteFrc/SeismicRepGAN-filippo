@@ -124,10 +124,10 @@ class RepGAN(tf.keras.Model):
         """
         self.Fx = self.BuildFx()
         self.Gz = self.BuildGz()
-        self.PredN = self.BuildPredN()
+        #self.PredN = self.BuildPredN()
 
         self.models = [self.Dx, self.Dc, self.Ds, self.Dn,
-                       self.Fx, self.Gz, self.PredN]
+                       self.Fx, self.Gz]
 
     def compile(self, optimizers, losses, **kwargs):
 
@@ -401,14 +401,14 @@ class RepGAN(tf.keras.Model):
             ZXZout = self.train_ZXZ(X, damage_class)
         for _ in range(self.nXRepX):
             XZXout = self.train_XZX(X, damage_class)
-        for _ in range(2):
-            Predout = self.train_pred(X,y)
+        #for _ in range(2):
+        #    Predout = self.train_pred(X,y)
 
         (Dx_fake, Dx_real) = ZXZout
 
         (Dc_fake, Ds_fake, Dn_fake, Dc_real, Ds_real, Dn_real) = XZXout
 
-        (y_pred, c, s, n) = Predout
+        #(y_pred, c, s, n) = Predout
 
         # Compute our own metrics
         for k, v in self.loss_trackers.items():
@@ -434,14 +434,14 @@ class RepGAN(tf.keras.Model):
         # Reconstruct real signals
         X_rec = self.Gz((s, c, n), training=False)
         # Compute predictions
-        n_pred = self.PredN(n, training=False)
-        X_pred = self.Gz((s, c, n_pred), training=False)
+        #n_pred = self.PredN(n, training=False)
+        #X_pred = self.Gz((s, c, n_pred), training=False)
 
         # Updates the metrics tracking the loss
         RecXloss=self.RecXloss(X, X_rec)
-        Predloss=self.Predloss(y, X_pred)
+        #Predloss=self.Predloss(y, X_pred)
         self.loss_trackers["RecXloss_tracker"].update_state(RecXloss)
-        self.loss_trackers["Predloss_tracker"].update_state(Predloss)
+        #self.loss_trackers["Predloss_tracker"].update_state(Predloss)
 
         # for k, v in self.loss_trackers.items():
         #     v.update_state(self.loss_val[k.strip("_tracker")])
@@ -453,8 +453,7 @@ class RepGAN(tf.keras.Model):
         #self.RecXloss_tracker.update_state(X, X_rec)
         # Return a dict mapping metric names to current value.
         # Note that it will include the loss (tracked in self.metrics).
-        return {"RecXloss": self.loss_trackers["RecXloss_tracker"].result(),
-                "Predloss": self.loss_trackers["Predloss_tracker"].result(),}
+        return {"RecXloss": self.loss_trackers["RecXloss_tracker"].result()}
         #return {"RecXloss": RecXloss_tracker.result()}
 
     def call(self, X):
@@ -469,6 +468,30 @@ class RepGAN(tf.keras.Model):
         fakeX = self.Gz((s_prior, c, n_prior), training=False)
         X_rec = self.Gz((s_fake, c_fake, n_fake), training=False)
         return X_rec, c_fake, s_fake, n_fake, fakeX
+
+    def plotAnalysis(self, X, c):
+        # Génération des sorties avec le modèle Fx
+        [hs_fake, s_fake, c_fake, n_fake] = self.Fx(X, training=False)
+        values = [-1, -0.5, 0, 0.5, 1]
+        s_fakes = [tf.expand_dims(tf.convert_to_tensor([values[i], values[j]], dtype=tf.float32), axis=0) for i in range(5) for j in range(5)]
+
+        # Sélection du premier élément de classe 0 de chaque vecteur
+        c0 = c[1:2]
+        n_fake_c0 = n_fake[1:2]
+
+        # Sélection du premier élément de classe 0 de chaque vecteur
+        c1 = c[0:1]
+        n_fake_c1 = n_fake[0:1]
+
+        n_zeros = tf.zeros_like(n_fake_c0)
+
+        list_X0_rec_n_zero = [self.Gz((s_fake_i, c0, n_zeros), training=False) for s_fake_i in s_fakes]
+        list_X0_rec_n = [self.Gz((s_fake_i, c0, n_fake_c0), training=False) for s_fake_i in s_fakes]
+
+        list_X1_rec_n_zero = [self.Gz((s_fake_i, c1, n_zeros), training=False) for s_fake_i in s_fakes]
+        list_X1_rec_n = [self.Gz((s_fake_i, c1, n_fake_c0), training=False) for s_fake_i in s_fakes]
+
+        return list_X0_rec_n_zero, list_X0_rec_n, list_X1_rec_n_zero, list_X1_rec_n 
 
     def label_predictor(self, X, c):
         [_, s_fake, c_fake, n_fake] = self.Fx(X)
